@@ -1,0 +1,786 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>JoyHub-Demo</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #fcfaf8;
+        --ink: #333333;
+        --muted: #8d8d8d;
+        --line: #e8e3dd;
+        --panel: #ffffff;
+        --blue: #1854b6;
+        --blue-soft-a: #cadafa;
+        --blue-soft-b: #e2e6f9;
+        --purple: #462d8c;
+        --purple-soft-a: #cec8fa;
+        --purple-soft-b: #e5e1fa;
+        --shadow: 0 22px 70px rgba(31, 34, 42, 0.10);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+        color: var(--ink);
+        background: var(--bg);
+      }
+
+      body[data-auth="checking"] main,
+      body[data-auth="locked"] main,
+      body[data-auth="checking"] .modal,
+      body[data-auth="locked"] .modal {
+        display: none;
+      }
+
+      button,
+      input,
+      textarea {
+        font: inherit;
+      }
+
+      button {
+        cursor: pointer;
+      }
+
+      main {
+        width: min(1180px, calc(100% - 48px));
+        margin: 0 auto;
+        padding: 56px 0 72px;
+      }
+
+      header {
+        max-width: 760px;
+        margin-bottom: 44px;
+      }
+
+      h1 {
+        margin: 0 0 14px;
+        font-size: clamp(36px, 6vw, 64px);
+        line-height: 1.02;
+        letter-spacing: 0;
+      }
+
+      .subtitle {
+        margin: 0;
+        color: var(--muted);
+        font-size: 18px;
+        font-weight: 500;
+        line-height: 1.7;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 350px));
+        gap: 28px;
+        align-items: stretch;
+        justify-content: start;
+      }
+
+      .demo-card {
+        position: relative;
+        display: flex;
+        min-height: 260px;
+        flex-direction: column;
+        justify-content: space-between;
+        overflow: hidden;
+        padding: 28px 30px 32px;
+        color: var(--card-ink);
+        text-decoration: none;
+        background: linear-gradient(180deg, var(--card-a) 0%, var(--card-b) 100%);
+        border-radius: 24px;
+        box-shadow: none;
+        transition: transform 160ms ease, box-shadow 160ms ease;
+      }
+
+      .demo-card:hover,
+      .demo-card:focus-visible {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow);
+      }
+
+      .card-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+      }
+
+      .tag-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .tag {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 42px;
+        height: 24px;
+        padding: 0 10px;
+        border-radius: 4px;
+        background: rgba(255, 255, 255, 0.5);
+        color: var(--card-ink);
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .edit-button {
+        display: inline-grid;
+        width: 32px;
+        height: 32px;
+        place-items: center;
+        border: 0;
+        border-radius: 999px;
+        color: var(--card-ink);
+        background: transparent;
+      }
+
+      .edit-button:hover,
+      .edit-button:focus-visible {
+        background: rgba(255, 255, 255, 0.55);
+      }
+
+      .edit-button svg {
+        width: 20px;
+        height: 20px;
+      }
+
+      .card-body {
+        margin: 28px 0;
+      }
+
+      h2 {
+        margin: 0 0 16px;
+        color: var(--card-ink);
+        font-size: clamp(20px, 2.5vw, 26px);
+        line-height: 1.18;
+        letter-spacing: 0;
+      }
+
+      .points {
+        display: grid;
+        gap: 9px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .points li {
+        display: flex;
+        align-items: flex-start;
+        gap: 9px;
+        color: color-mix(in srgb, var(--card-ink) 80%, transparent);
+        font-size: 15px;
+        line-height: 1.45;
+      }
+
+      .points li::before {
+        content: "";
+        flex: 0 0 auto;
+        width: 6px;
+        height: 6px;
+        margin-top: 8px;
+        border-radius: 999px;
+        background: var(--card-ink);
+      }
+
+      .open {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        color: var(--card-ink);
+        font-size: 17px;
+        font-weight: 800;
+      }
+
+      .open svg {
+        width: 20px;
+        height: 20px;
+      }
+
+      .modal {
+        position: fixed;
+        inset: 0;
+        z-index: 10;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        background: rgba(34, 34, 34, 0.28);
+      }
+
+      .modal[data-open="true"] {
+        display: flex;
+      }
+
+      .auth-layer {
+        position: fixed;
+        inset: 0;
+        z-index: 30;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        background:
+          linear-gradient(145deg, rgba(202, 218, 250, 0.72), transparent 44%),
+          linear-gradient(315deg, rgba(206, 200, 250, 0.64), transparent 46%),
+          var(--bg);
+      }
+
+      body[data-auth="locked"] .auth-layer {
+        display: flex;
+      }
+
+      .auth-card {
+        width: min(420px, 100%);
+        padding: 30px;
+        border: 1px solid var(--line);
+        border-radius: 24px;
+        background: rgba(255, 255, 255, 0.92);
+        box-shadow: var(--shadow);
+      }
+
+      .auth-card h2 {
+        margin: 0 0 10px;
+        color: var(--ink);
+        font-size: 30px;
+      }
+
+      .auth-card p {
+        margin: 0 0 22px;
+        color: var(--muted);
+        line-height: 1.6;
+      }
+
+      .auth-actions {
+        display: grid;
+        gap: 12px;
+      }
+
+      .auth-submit {
+        height: 48px;
+        border: 0;
+        border-radius: 999px;
+        background: #333333;
+        color: #ffffff;
+        font-weight: 800;
+      }
+
+      .auth-error {
+        min-height: 20px;
+        margin: 0;
+        color: #d93562;
+        font-size: 14px;
+      }
+
+      .dialog {
+        width: min(520px, 100%);
+        padding: 28px;
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        background: var(--panel);
+        box-shadow: var(--shadow);
+      }
+
+      .dialog-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 22px;
+      }
+
+      .dialog h3 {
+        margin: 0;
+        font-size: 24px;
+        letter-spacing: 0;
+      }
+
+      .close-button {
+        display: inline-grid;
+        width: 36px;
+        height: 36px;
+        place-items: center;
+        border: 0;
+        border-radius: 999px;
+        background: #f3f1ef;
+        color: #333333;
+      }
+
+      .form-grid {
+        display: grid;
+        gap: 16px;
+      }
+
+      label {
+        display: grid;
+        gap: 8px;
+        color: #77716d;
+        font-size: 14px;
+        font-weight: 600;
+      }
+
+      input,
+      textarea {
+        width: 100%;
+        border: 0;
+        border-radius: 12px;
+        background: #f1f0ef;
+        color: var(--ink);
+        outline: 2px solid transparent;
+      }
+
+      input {
+        height: 48px;
+        padding: 0 14px;
+      }
+
+      textarea {
+        min-height: 92px;
+        resize: vertical;
+        padding: 13px 14px;
+        line-height: 1.5;
+      }
+
+      input:focus,
+      textarea:focus {
+        outline-color: #c9d8fb;
+      }
+
+      .tag-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .tag-editor {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 10px;
+        min-height: 48px;
+        padding: 6px;
+        border-radius: 12px;
+        background: #f1f0ef;
+      }
+
+      .tag-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        min-height: 34px;
+        padding: 0 12px;
+        border: 0;
+        border-radius: 999px;
+        background: #f1f0ef;
+        color: #333333;
+      }
+
+      .tag-add,
+      .tag-remove {
+        display: inline-grid;
+        place-items: center;
+        border: 0;
+        border-radius: 999px;
+        color: #333333;
+        background: #ffffff;
+      }
+
+      .tag-add {
+        width: 36px;
+        height: 36px;
+        font-size: 26px;
+        line-height: 1;
+      }
+
+      .tag-remove {
+        width: 18px;
+        height: 18px;
+        font-size: 17px;
+        line-height: 1;
+      }
+
+      .actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-top: 22px;
+      }
+
+      .secondary,
+      .primary {
+        min-width: 86px;
+        height: 44px;
+        border: 0;
+        border-radius: 999px;
+        font-weight: 800;
+      }
+
+      .secondary {
+        background: #f1f0ef;
+        color: #55504c;
+      }
+
+      .primary {
+        background: #333333;
+        color: #ffffff;
+      }
+
+      @media (max-width: 780px) {
+        main {
+          width: min(100% - 28px, 560px);
+          padding: 36px 0 48px;
+        }
+
+        header {
+          margin-bottom: 28px;
+        }
+
+        .subtitle {
+          font-size: 16px;
+        }
+
+        .grid {
+          grid-template-columns: 1fr;
+          gap: 18px;
+        }
+
+        .demo-card {
+          min-height: 242px;
+          padding: 24px;
+        }
+      }
+    </style>
+  </head>
+  <body data-auth="checking">
+    <main>
+      <header>
+        <h1>JoyHub-Demo</h1>
+        <p class="subtitle">由 BOB 维护的用于评审、演示的交互式产品原型汇总。</p>
+      </header>
+
+      <section class="grid" aria-label="Demo 原型目录" id="demoGrid"></section>
+    </main>
+
+    <section class="auth-layer" aria-label="访问验证">
+      <form class="auth-card" id="authForm">
+        <h2>访问验证</h2>
+        <p>请输入 JoyHub-Demo 访问密码。登录有效期为 12 小时。</p>
+        <div class="auth-actions">
+          <input id="passwordInput" type="password" autocomplete="current-password" placeholder="输入密码" aria-label="访问密码">
+          <button class="auth-submit" type="submit">进入目录</button>
+          <p class="auth-error" id="authError" aria-live="polite"></p>
+        </div>
+      </form>
+    </section>
+
+    <div class="modal" id="editModal" aria-hidden="true">
+      <form class="dialog" id="editForm">
+        <div class="dialog-head">
+          <h3>信息编辑</h3>
+          <button class="close-button" type="button" id="closeModal" aria-label="关闭">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M18 6 6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </button>
+        </div>
+
+        <div class="form-grid">
+          <label>
+            Demo 名称
+            <input id="titleInput" name="title" autocomplete="off">
+          </label>
+
+          <label>
+            Demo 说明
+            <textarea id="pointsInput" name="points" placeholder="每行一条说明"></textarea>
+          </label>
+
+          <label>
+            Demo 分类标签
+            <div class="tag-editor" id="tagEditor">
+              <button class="tag-add" type="button" id="addTag" aria-label="新增标签">+</button>
+            </div>
+          </label>
+
+          <label>
+            打开路径
+            <input id="hrefInput" name="href" autocomplete="off">
+          </label>
+        </div>
+
+        <div class="actions">
+          <button class="secondary" type="button" id="resetCard">还原</button>
+          <button class="primary" type="submit">保存</button>
+        </div>
+      </form>
+    </div>
+
+    <script>
+      const storageKey = "joyhub-demo-card-config";
+      const authStorageKey = "joyhub-demo-auth-until";
+      const authDuration = 12 * 60 * 60 * 1000;
+      const passwordHash = "ba9f26aaf87859ac3a532cf733d83913e6f4c8de364c35381ff021745dc56586";
+      const canEdit = new URLSearchParams(window.location.search).get("edit") === "1";
+      const defaults = [
+        {
+          id: "community",
+          tags: ["社区"],
+          title: "V2.13-Co-Play优化",
+          points: ["Co-Play在社区页面提级", "增加Remote顶部泳道", "增加Remote广场"],
+          href: "./community/index.html",
+          tone: "blue"
+        },
+        {
+          id: "search-room",
+          tags: ["搜索"],
+          title: "V2.13-搜索优化",
+          points: ["搜索结果页面新增可以搜到用户ID与房间号"],
+          href: "./search-room/index.html",
+          tone: "purple"
+        }
+      ];
+
+      const tones = {
+        blue: {
+          ink: "var(--blue)",
+          a: "var(--blue-soft-a)",
+          b: "var(--blue-soft-b)"
+        },
+        purple: {
+          ink: "var(--purple)",
+          a: "var(--purple-soft-a)",
+          b: "var(--purple-soft-b)"
+        }
+      };
+
+      let cards = loadCards();
+      let editingId = null;
+
+      const grid = document.querySelector("#demoGrid");
+      const modal = document.querySelector("#editModal");
+      const form = document.querySelector("#editForm");
+      const titleInput = document.querySelector("#titleInput");
+      const pointsInput = document.querySelector("#pointsInput");
+      const tagEditor = document.querySelector("#tagEditor");
+      const hrefInput = document.querySelector("#hrefInput");
+      const authForm = document.querySelector("#authForm");
+      const passwordInput = document.querySelector("#passwordInput");
+      const authError = document.querySelector("#authError");
+      let editingTags = [];
+
+      async function sha256(text) {
+        const bytes = new TextEncoder().encode(text);
+        const digest = await crypto.subtle.digest("SHA-256", bytes);
+        return Array.from(new Uint8Array(digest)).map((byte) => byte.toString(16).padStart(2, "0")).join("");
+      }
+
+      function isAuthenticated() {
+        return Number(localStorage.getItem(authStorageKey) || 0) > Date.now();
+      }
+
+      function unlock() {
+        document.body.dataset.auth = "unlocked";
+        renderCards();
+      }
+
+      function lock() {
+        document.body.dataset.auth = "locked";
+        passwordInput.focus();
+      }
+
+      function checkAuth() {
+        if (isAuthenticated()) {
+          unlock();
+          return;
+        }
+        lock();
+      }
+
+      function loadCards() {
+        try {
+          const saved = JSON.parse(localStorage.getItem(storageKey));
+          if (!Array.isArray(saved)) return defaults;
+          return defaults.map((item) => ({ ...item, ...saved.find((card) => card.id === item.id) }));
+        } catch {
+          return defaults;
+        }
+      }
+
+      function saveCards() {
+        localStorage.setItem(storageKey, JSON.stringify(cards));
+      }
+
+      function renderCards() {
+        grid.innerHTML = cards.map((card) => {
+          const tone = tones[card.tone] || tones.blue;
+          const points = card.points.map((point) => `<li>${escapeHtml(point)}</li>`).join("");
+          const tags = normalizeTags(card).map((tag) => `<span class="tag">${escapeHtml(tag)}</span>`).join("");
+          const editButton = canEdit ? `
+            <button class="edit-button" type="button" data-edit="${escapeHtml(card.id)}" aria-label="编辑 ${escapeHtml(card.title)}">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M12 13a1.4 1.4 0 1 0 0-2.8A1.4 1.4 0 0 0 12 13ZM5 13a1.4 1.4 0 1 0 0-2.8A1.4 1.4 0 0 0 5 13Zm14 0a1.4 1.4 0 1 0 0-2.8A1.4 1.4 0 0 0 19 13Z" fill="currentColor"/>
+              </svg>
+            </button>
+          ` : "";
+          return `
+            <a class="demo-card" href="${escapeHtml(card.href)}" style="--card-ink: ${tone.ink}; --card-a: ${tone.a}; --card-b: ${tone.b};">
+              <div>
+                <div class="card-top">
+                  <div class="tag-list">${tags}</div>
+                  ${editButton}
+                </div>
+                <div class="card-body">
+                  <h2>${escapeHtml(card.title)}</h2>
+                  <ul class="points">${points}</ul>
+                </div>
+              </div>
+              <span class="open">
+                立即查看
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="m9 6 6 6-6 6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </span>
+            </a>
+          `;
+        }).join("");
+      }
+
+      function openEditor(id) {
+        const card = cards.find((item) => item.id === id);
+        if (!card) return;
+        editingId = id;
+        titleInput.value = card.title;
+        pointsInput.value = card.points.join("\n");
+        editingTags = normalizeTags(card);
+        renderTagEditor();
+        hrefInput.value = card.href;
+        modal.dataset.open = "true";
+        modal.setAttribute("aria-hidden", "false");
+        titleInput.focus();
+      }
+
+      function closeEditor() {
+        modal.dataset.open = "false";
+        modal.setAttribute("aria-hidden", "true");
+        editingId = null;
+      }
+
+      function resetCard() {
+        if (!editingId) return;
+        const defaultCard = defaults.find((item) => item.id === editingId);
+        cards = cards.map((item) => item.id === editingId ? { ...defaultCard } : item);
+        saveCards();
+        renderCards();
+        closeEditor();
+      }
+
+      function normalizeTags(card) {
+        if (Array.isArray(card.tags) && card.tags.length) return card.tags;
+        if (card.tag) return [card.tag];
+        return ["未分类"];
+      }
+
+      function renderTagEditor() {
+        const chips = editingTags.map((tag, index) => `
+          <span class="tag-chip">
+            ${escapeHtml(tag)}
+            <button class="tag-remove" type="button" data-remove-tag="${index}" aria-label="删除 ${escapeHtml(tag)}">×</button>
+          </span>
+        `).join("");
+        tagEditor.innerHTML = `<button class="tag-add" type="button" id="addTag" aria-label="新增标签">+</button>${chips}`;
+      }
+
+      function addTag() {
+        const value = window.prompt("请输入分类标签");
+        if (!value) return;
+        const tag = value.trim();
+        if (!tag || editingTags.includes(tag)) return;
+        editingTags = [...editingTags, tag];
+        renderTagEditor();
+      }
+
+      function escapeHtml(value) {
+        return String(value)
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
+      }
+
+      grid.addEventListener("click", (event) => {
+        const editButton = event.target.closest("[data-edit]");
+        if (!editButton) return;
+        event.preventDefault();
+        event.stopPropagation();
+        openEditor(editButton.dataset.edit);
+      });
+
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        if (!editingId) return;
+        cards = cards.map((card) => {
+          if (card.id !== editingId) return card;
+          return {
+            ...card,
+            title: titleInput.value.trim() || card.title,
+            tags: editingTags.length ? editingTags : normalizeTags(card),
+            href: hrefInput.value.trim() || card.href,
+            points: pointsInput.value.split("\n").map((item) => item.trim()).filter(Boolean)
+          };
+        });
+        saveCards();
+        renderCards();
+        closeEditor();
+      });
+
+      document.querySelector("#closeModal").addEventListener("click", closeEditor);
+      document.querySelector("#resetCard").addEventListener("click", resetCard);
+
+      tagEditor.addEventListener("click", (event) => {
+        const removeButton = event.target.closest("[data-remove-tag]");
+        if (removeButton) {
+          editingTags = editingTags.filter((_, index) => index !== Number(removeButton.dataset.removeTag));
+          renderTagEditor();
+          return;
+        }
+
+        if (event.target.closest("#addTag")) addTag();
+      });
+
+      modal.addEventListener("click", (event) => {
+        if (event.target === modal) closeEditor();
+      });
+
+      window.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") closeEditor();
+      });
+
+      authForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        authError.textContent = "";
+        const hash = await sha256(passwordInput.value);
+        if (hash !== passwordHash) {
+          authError.textContent = "密码不正确";
+          passwordInput.select();
+          return;
+        }
+        localStorage.setItem(authStorageKey, String(Date.now() + authDuration));
+        passwordInput.value = "";
+        unlock();
+      });
+
+      checkAuth();
+    </script>
+  </body>
+</html>

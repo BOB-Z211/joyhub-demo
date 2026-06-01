@@ -1,0 +1,1791 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Co-play</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        background: #eeeeee;
+        font-family: Inter, "HarmonyOS Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        color: #333333;
+      }
+
+      .phone {
+        position: relative;
+        width: 375px;
+        height: 812px;
+        overflow: hidden;
+        background: #ffffff;
+        box-shadow: 0 24px 80px rgba(0, 0, 0, 0.18);
+      }
+
+      .status {
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 13px 14px 0 30px;
+        background: #fef9fd center / 100% 44px no-repeat url("assets/status-bar-light.png");
+        font-size: 13px;
+        font-weight: 600;
+        color: transparent;
+      }
+
+      .system-icons {
+        display: none;
+        align-items: flex-end;
+        gap: 3px
+      }
+
+      .signal {
+        display: flex;
+        align-items: flex-end;
+        gap: 2px;
+        height: 12px;
+      }
+
+      .signal span {
+        width: 3px;
+        border-radius: 2px;
+        background: #000000;
+      }
+
+      .signal span:nth-child(1) { height: 4px; }
+      .signal span:nth-child(2) { height: 6px; }
+      .signal span:nth-child(3) { height: 8px; }
+      .signal span:nth-child(4) { height: 11px; }
+
+      .wifi {
+        width: 15px;
+        height: 11px;
+        position: relative;
+      }
+
+      .wifi::before,
+      .wifi::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        border: 2px solid #000000;
+        border-color: #000000 transparent transparent transparent;
+        border-radius: 50%;
+        transform: translateX(-50%);
+      }
+
+      .wifi::before {
+        width: 15px;
+        height: 15px;
+        top: 0;
+      }
+
+      .wifi::after {
+        width: 9px;
+        height: 9px;
+        top: 4px;
+      }
+
+      .battery {
+        width: 25px;
+        height: 12px;
+        border: 1.5px solid rgba(0, 0, 0, 0.85);
+        border-radius: 3px;
+        position: relative;
+        padding: 2px;
+      }
+
+      .battery::before {
+        content: "";
+        position: absolute;
+        right: -3px;
+        top: 3px;
+        width: 2px;
+        height: 5px;
+        border-radius: 0 2px 2px 0;
+        background: rgba(0, 0, 0, 0.36);
+      }
+
+      .battery::after {
+        content: "";
+        display: block;
+        width: 18px;
+        height: 100%;
+        border-radius: 2px;
+        background: rgba(0, 0, 0, 0.9);
+      }
+
+      .topbar {
+        height: 56px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 15px;
+        background: #fef9fd;
+      }
+
+      .profile-dot {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: #537843;
+      }
+
+      .tabs {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        font-size: 14px;
+        font-weight: 500;
+        color: #666666;
+      }
+
+      .tab {
+        display: grid;
+        gap: 5px;
+        justify-items: center;
+      }
+
+      .tab.active {
+        min-width: 54px;
+        color: #333333;
+        font-weight: 600;
+      }
+
+      .tab.active::after {
+        content: "";
+        width: 54px;
+        height: 2px;
+        border-radius: 999px;
+        background: #333333;
+      }
+
+      .search {
+        width: 36px;
+        height: 36px;
+        position: relative;
+      }
+
+      .search::before {
+        content: "";
+        position: absolute;
+        left: 8px;
+        top: 8px;
+        width: 15px;
+        height: 15px;
+        border: 1.8px solid #333333;
+        border-radius: 50%;
+      }
+
+      .search::after {
+        content: "";
+        position: absolute;
+        left: 22px;
+        top: 22px;
+        width: 6px;
+        height: 1.8px;
+        border-radius: 999px;
+        background: #333333;
+        transform: rotate(45deg);
+      }
+
+      .community-scroll {
+        position: absolute;
+        left: 0;
+        top: 100px;
+        width: 100%;
+        height: 629px;
+        overflow-y: auto;
+        overscroll-behavior-y: contain;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+      }
+
+      .community-scroll::-webkit-scrollbar {
+        display: none;
+      }
+
+      .community-scroll.is-bouncing {
+        animation: feedBounce 320ms ease-out;
+      }
+
+      .stories {
+        position: relative;
+        width: 100%;
+        display: flex;
+        align-items: flex-start;
+        gap: 25px;
+        overflow-x: auto;
+        padding: 20px 15px;
+        scroll-snap-type: x proximity;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        cursor: grab;
+        touch-action: none;
+      }
+
+      .stories.is-dragging {
+        cursor: grabbing;
+        scroll-snap-type: none;
+      }
+
+      .stories::-webkit-scrollbar {
+        display: none;
+      }
+
+      .story {
+        position: relative;
+        width: 80px;
+        height: 102px;
+        flex: 0 0 auto;
+        border: 0;
+        padding: 0;
+        background: transparent;
+        font: inherit;
+        cursor: pointer;
+      }
+
+      .avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: #d4d5dc center / cover no-repeat;
+      }
+
+      .avatar.remote-photo { background-image: url("assets/avatar-remote.jpg"); }
+      .avatar.kamala-photo { background-image: url("assets/avatar-kamala.jpg"); }
+      .avatar.iris-photo { background-image: url("assets/avatar-iris.jpg"); }
+      .avatar.jasnsk-photo { background-image: url("assets/avatar-jasnsk.jpg"); }
+
+      .story.remote .avatar {
+        border: 0.5px solid #eeeeee;
+      }
+
+      .story.active .avatar {
+        border: 2px solid #715afd;
+        box-shadow: 0 0 0 1px #ff89f5;
+      }
+
+      .remote-badge {
+        position: absolute;
+        right: 0;
+        top: 56px;
+        width: 24px;
+        height: 24px;
+        display: grid;
+        place-items: center;
+        border-radius: 12px;
+        background: #ffffff center / 17px 17px no-repeat url("assets/ic_toy.jpg");
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.16);
+      }
+
+      .story.remote .remote-badge {
+        background: #715afd center / 13px 13px no-repeat url("assets/ic_setting.svg");
+      }
+
+      .plaza-entry .remote-entry-circle {
+        width: 80px;
+        height: 80px;
+        display: grid;
+        place-items: center;
+        border-radius: 50%;
+        background: #715afd;
+        box-shadow: 0 10px 24px rgba(113, 90, 253, 0.28);
+      }
+
+      .plaza-entry img {
+        width: 28px;
+        height: 28px;
+      }
+
+      .story-name {
+        margin-top: 8px;
+        text-align: center;
+        font-size: 10px;
+        line-height: 1;
+        white-space: nowrap;
+        color: #333333;
+      }
+
+      .story.remote .story-name {
+        color: #999999;
+      }
+
+      .feed {
+        position: relative;
+        left: 5px;
+        width: 365px;
+        min-height: 479px;
+        display: grid;
+        grid-template-columns: 180px 180px;
+        gap: 5px;
+        padding-bottom: 88px;
+      }
+
+      .feed {
+        cursor: grab;
+        touch-action: pan-y;
+      }
+
+      .feed.is-dragging {
+        cursor: grabbing;
+      }
+
+      @keyframes feedBounce {
+        0% { transform: translateY(0); }
+        45% { transform: translateY(-9px); }
+        100% { transform: translateY(0); }
+      }
+
+      .column {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      .post {
+        width: 180px;
+      }
+
+
+      .post-open {
+        display: block;
+        width: 100%;
+        border: 0;
+        padding: 0;
+        background: transparent;
+        text-align: left;
+        color: inherit;
+        font: inherit;
+        cursor: pointer;
+      }
+
+
+      .post-image {
+        display: block;
+        width: 100%;
+        border-radius: 8px;
+        background: #d4d5dc center / cover no-repeat;
+      }
+
+      .post-image.blue {
+        background: #b1c9e5;
+      }
+
+      .post-image.toys { background-image: url("assets/post-toys-1.jpg"); }
+      .post-image.toys-alt { background-image: url("assets/post-toys-2.jpg"); }
+      .post-image.sale { background-image: url("assets/post-sale.jpg"); }
+      .post-image.talk { background-image: url("assets/post-talk.svg"); }
+      .post-image.where { background-image: url("assets/post-where.jpg"); }
+
+      .post-title {
+        padding: 6px 5px 4px;
+        font-size: 13px;
+        line-height: 1.23;
+        font-weight: 500;
+        color: #333333;
+      }
+
+      .post-meta {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 170px;
+        min-height: 18px;
+        gap: 8px;
+      }
+
+      .author {
+        border: 0;
+        padding: 0;
+        background: transparent;
+        display: flex;
+        align-items: center;
+        gap: 3px;
+        min-width: 0;
+        font-size: 10px;
+        color: #666666;
+      }
+
+      .author-dot {
+        width: 18px;
+        height: 18px;
+        flex: 0 0 auto;
+        border-radius: 50%;
+        background: #537843;
+      }
+
+      .author-dot.purple {
+        background: #8528e7;
+      }
+
+      .mini-heart {
+        width: 16px;
+        height: 16px;
+        flex: 0 0 auto;
+        background: center / contain no-repeat url("assets/ic_badge_verified.png");
+      }
+
+      .pill {
+        border: 0;
+        padding: 4px 8px;
+        border-radius: 8px;
+        color: #ffffff;
+        font-size: 10px;
+        font-weight: 500;
+        background:
+          radial-gradient(70% 90% at 50% 112%, rgba(169, 133, 242, 1), rgba(169, 133, 242, 0)),
+          linear-gradient(180deg, #6755d1, #8c6ceb);
+        cursor: pointer;
+      }
+
+      .fab {
+        position: absolute;
+        right: 20px;
+        bottom: 103px;
+        width: 56px;
+        height: 56px;
+        border: 0;
+        border-radius: 50%;
+        background: #715afd;
+        box-shadow: 0 4px 10px rgba(142, 74, 252, 0.25);
+      }
+
+      .fab::before,
+      .fab::after {
+        content: "";
+        position: absolute;
+        left: 20px;
+        top: 27px;
+        width: 16px;
+        height: 2px;
+        border-radius: 2px;
+        background: #ffffff;
+      }
+
+      .fab::after {
+        transform: rotate(90deg);
+      }
+
+      .bottom-nav {
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        width: 375px;
+        height: 83px;
+        background: #ffffff;
+        box-shadow: 0 -4px 18px rgba(102, 102, 102, 0.1);
+      }
+
+      .nav-items {
+        height: 49px;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+      }
+
+      .nav-item {
+        position: relative;
+        display: grid;
+        place-items: center;
+        align-content: center;
+        gap: 4px;
+        font-size: 11px;
+        font-weight: 500;
+      }
+
+      .nav-icon {
+        width: 24px;
+        height: 24px;
+        display: grid;
+        place-items: center;
+        color: #333333;
+      }
+
+      .home-icon::before {
+        content: "";
+        width: 14px;
+        height: 11px;
+        border: 1px solid currentColor;
+        border-top: 0;
+        transform: translateY(3px);
+      }
+
+      .home-icon::after {
+        content: "";
+        position: absolute;
+        width: 12px;
+        height: 12px;
+        border-left: 1px solid currentColor;
+        border-top: 1px solid currentColor;
+        transform: translateY(-2px) rotate(45deg);
+      }
+
+      .community-icon::before {
+        content: "";
+        width: 16px;
+        height: 16px;
+        border: 1px solid currentColor;
+        border-radius: 5px;
+        transform: rotate(-45deg);
+      }
+
+      .chat-icon::before {
+        content: "";
+        width: 17px;
+        height: 14px;
+        border: 1px solid currentColor;
+        border-radius: 5px;
+      }
+
+      .me-icon::before {
+        content: "";
+        width: 17px;
+        height: 17px;
+        border: 1px solid currentColor;
+        border-radius: 50% 50% 45% 45%;
+      }
+
+      .badge {
+        position: absolute;
+        top: 0;
+        right: 33px;
+        width: 30px;
+        height: 18px;
+        display: grid;
+        place-items: center;
+        border-radius: 13px;
+        border: 1px solid #ffffff;
+        background: #ff5a50;
+        color: #ffffff;
+        font-size: 12px;
+      }
+
+      .home-indicator {
+        position: absolute;
+        left: 118px;
+        bottom: 8px;
+        width: 140px;
+        height: 5px;
+        border-radius: 100px;
+        background: #000000;
+      }
+
+
+      .sheet-layer {
+        position: absolute;
+        inset: 0;
+        z-index: 60;
+        pointer-events: none;
+      }
+
+      .sheet-layer.is-open {
+        pointer-events: auto;
+      }
+
+      .scrim {
+        position: absolute;
+        inset: 0;
+        border: 0;
+        padding: 0;
+        background: rgba(0, 0, 0, 0.32);
+        opacity: 0;
+        transition: opacity 180ms ease;
+      }
+
+      .sheet-layer.is-open .scrim {
+        opacity: 1;
+      }
+
+      .remote-sheet {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 533px;
+        padding: 26px 22px 28px;
+        border-radius: 20px 20px 0 0;
+        background: #ffffff;
+        transform: translateY(100%);
+        transition: transform 220ms ease;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
+        touch-action: pan-y;
+      }
+
+      .sheet-layer.is-open .remote-sheet {
+        transform: translateY(0);
+      }
+
+      .remote-sheet::-webkit-scrollbar {
+        display: none;
+      }
+
+      .remote-sheet {
+        scrollbar-width: none;
+      }
+
+      .sheet-title {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin: 0;
+        font-size: 17px;
+        font-weight: 700;
+      }
+
+      .tag {
+        display: inline-grid;
+        place-items: center;
+        height: 20px;
+        padding: 0 10px;
+        border-radius: 999px;
+        background: #f1edff;
+        color: #715afd;
+        font-size: 10px;
+        font-weight: 700;
+      }
+
+      .sheet-subtitle {
+        margin: 6px 0 16px;
+        text-align: center;
+        color: #999999;
+        font-size: 10px;
+      }
+
+      .toy-preview {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 16px;
+        border-radius: 8px;
+        background: #d4d1dc center / cover no-repeat url("assets/sheet-toy.jpg");
+      }
+
+      .connect-btn {
+        display: block;
+        width: 132px;
+        height: 36px;
+        margin: 0 auto 18px;
+        border: 1px solid #d5cff9;
+        border-radius: 18px;
+        background: #ffffff;
+        color: #333333;
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .settings-group {
+        margin-top: 12px
+      }
+
+      .settings-label {
+        margin: 0 0 8px;
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .option-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px
+      }
+
+      .choice {
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        border: 1px solid transparent;
+        border-radius: 9px;
+        background: #f8f8f8;
+        color: #333333;
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .choice.is-selected {
+        border-color: #ff29a8;
+        background: #ffffff;
+      }
+
+      .radio-dot {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: #dddce8;
+      }
+
+      .role-card {
+        position: relative;
+        min-height: 48px;
+        display: grid;
+        place-items: center;
+        align-content: center;
+        gap: 5px;
+        border: 1px solid transparent;
+        border-radius: 9px;
+        background: #f8f8f8;
+        color: #666666;
+        font-size: 11px;
+        font-weight: 700;
+      }
+
+      .role-card.is-selected {
+        border-color: #715afd;
+        background: #ffffff;
+        color: #715afd;
+      }
+
+      .role-card img {
+        width: 16px;
+        height: 16px;
+      }
+
+      .role-card.is-selected::after {
+        content: "✓";
+        position: absolute;
+        right: 9px;
+        top: 8px;
+        width: 16px;
+        height: 16px;
+        display: grid;
+        place-items: center;
+        border-radius: 50%;
+        background: #715afd;
+        color: #ffffff;
+        font-size: 11px;
+      }
+
+      .confirm-btn {
+        width: 100%;
+        height: 42px;
+        margin-top: 12px;
+        position: sticky;
+        bottom: 0;
+        z-index: 2;
+        box-shadow: 0 -12px 20px #ffffff;
+        border: 0;
+        border-radius: 23px;
+        background: #6954d9;
+        color: #ffffff;
+        font-size: 14px;
+        font-weight: 700;
+        flex: 0 0 auto;
+      }
+
+
+
+
+      .app-view.profile-viewer,
+      .app-view.post-viewer {
+        z-index: 35;
+        overflow-y: auto;
+        overscroll-behavior-y: contain;
+        -webkit-overflow-scrolling: touch;
+        background: #ffffff;
+        scrollbar-width: none;
+      }
+
+      .app-view.profile-viewer::-webkit-scrollbar,
+      .app-view.post-viewer::-webkit-scrollbar {
+        display: none;
+      }
+
+      .profile-image,
+      .post-detail-image {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+
+      .app-view.profile-viewer .profile-back,
+      .app-view.post-viewer .post-back {
+        position: absolute;
+        left: 12px;
+        top: 46px;
+        width: 52px;
+        height: 52px;
+        border: 0;
+        background: transparent;
+        opacity: 0;
+      }
+
+      .remote-plaza {
+        background: #fbf8ff;
+        z-index: 34;
+      }
+
+      .plaza-header {
+        height: 72px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        font-size: 17px;
+        font-weight: 800;
+      }
+
+      .plaza-back {
+        position: absolute;
+        left: 16px;
+        width: 40px;
+        height: 40px;
+        border: 0;
+        background: transparent;
+        font-size: 36px;
+        line-height: 1;
+        color: #333333;
+      }
+
+      .plaza-tip {
+        margin: 0 0 14px;
+        min-height: 47px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 9px 11px;
+        border-radius: 12px;
+        background: #f0e6ff;
+        font-size: 11px;
+        font-weight: 700;
+        line-height: 1.35;
+        flex: 0 0 auto;
+      }
+
+      .plaza-visibility {
+        flex: 0 0 auto;
+        border: 0;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 10px;
+        border-radius: 18px;
+        background: #ffffff;
+        color: #555555;
+        font-size: 11px;
+      }
+
+      .green-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #24c99a;
+      }
+
+      .plaza-visibility.is-hidden .green-dot {
+        background: #ff9f2d;
+      }
+
+      .plaza-scroll {
+        height: 625px;
+        overflow-y: auto;
+        overflow-x: hidden;
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
+        touch-action: pan-y;
+        padding: 0 15px 92px;
+        scrollbar-width: none;
+      }
+
+      .plaza-scroll::-webkit-scrollbar {
+        display: none;
+      }
+
+      .remote-list {
+        display: grid;
+        gap: 12px;
+        min-width: 0;
+        overflow: visible;
+      }
+
+      .remote-card {
+        width: 100%;
+        min-width: 0;
+        min-height: 80px;
+        display: grid;
+        grid-template-columns: 55px minmax(0, 1fr) 56px;
+        align-items: center;
+        gap: 10px;
+        border: 0;
+        border-radius: 15px;
+        padding: 12px;
+        background: #ffffff;
+        text-align: left;
+        box-shadow: 0 10px 22px rgba(113, 90, 253, 0.06);
+        touch-action: pan-y;
+      }
+
+      .remote-card-info {
+        min-width: 0;
+        overflow: hidden;
+      }
+
+      .remote-card-avatar {
+        position: relative;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: #d4d5dc center / cover no-repeat;
+      }
+
+      .remote-card-avatar::after {
+        content: "";
+        position: absolute;
+        right: -3px;
+        bottom: -3px;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: #ff56c4 center / 14px 14px no-repeat url("assets/Female.svg");
+        border: 2px solid #ffffff;
+      }
+
+      .remote-card.male .remote-card-avatar::after {
+        background-color: #4677ff;
+        background-image: url("assets/Male.svg");
+      }
+
+      .remote-card h3 {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        min-width: 0;
+        margin: 0 0 4px;
+        font-size: 17px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .remote-card h3 img {
+        flex: 0 0 auto;
+        height: 17px;
+      }
+
+      .remote-card p {
+        margin: 0 0 8px;
+        color: #999999;
+        font-size: 11px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .remote-toys {
+        display: flex;
+        gap: 6px;
+        min-width: 0;
+        overflow: hidden;
+      }
+
+      .remote-toys img {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+
+      .remote-action {
+        justify-self: end;
+        width: 48px;
+        height: 48px;
+        display: grid;
+        place-items: center;
+        border-radius: 50%;
+        background: #715afd;
+        box-shadow: 0 5px 14px rgba(113, 90, 253, 0.3);
+      }
+
+      .remote-action img {
+        width: 24px;
+        height: 24px;
+      }
+
+      .quick-start {
+        position: absolute;
+        left: 15px;
+        right: 15px;
+        bottom: 28px;
+        height: 54px;
+        border: 0;
+        border-radius: 27px;
+        background: #715afd;
+        color: #ffffff;
+        font-size: 18px;
+        font-weight: 800;
+        box-shadow: 0 8px 20px rgba(113, 90, 253, 0.35);
+      }
+
+      .app-view {
+        position: absolute;
+        inset: 0;
+        z-index: 30;
+        display: none;
+        background: #ffffff;
+      }
+
+      .app-view.is-active {
+        display: block;
+      }
+
+      .call-view {
+        background:
+          radial-gradient(circle at 28% 18%, rgba(255, 255, 255, 0.85), transparent 28%),
+          radial-gradient(circle at 78% 35%, rgba(255, 137, 245, 0.34), transparent 30%),
+          linear-gradient(145deg, #fff1ec 0%, #f5dff0 28%, #cfc0ff 58%, #a797ff 100%);
+        background-size: 160% 160%, 150% 150%, 220% 220%;
+        animation: waitingGradient 5s ease-in-out infinite alternate;
+      }
+
+      @keyframes waitingGradient {
+        0% {
+          background-position: 0% 0%, 100% 15%, 0% 50%;
+          filter: hue-rotate(0deg);
+        }
+        50% {
+          background-position: 45% 20%, 50% 60%, 70% 20%;
+          filter: hue-rotate(12deg);
+        }
+        100% {
+          background-position: 85% 45%, 10% 80%, 100% 50%;
+          filter: hue-rotate(-8deg);
+        }
+      }
+
+      .call-view .status {
+        background: transparent;
+      }
+
+      .call-content {
+        display: grid;
+        justify-items: center;
+        padding-top: 112px;
+      }
+
+      .call-avatar {
+        width: 92px;
+        height: 92px;
+        border-radius: 50%;
+        background: #d4d5dc center / cover no-repeat url("assets/avatar-kamala.jpg");
+      }
+
+      .call-name {
+        margin: 19px 0 18px;
+        font-size: 20px;
+        font-weight: 800;
+      }
+
+      .call-status {
+        margin: 0;
+        color: #77717f;
+        font-size: 13px;
+      }
+
+      .hangup-btn {
+        position: absolute;
+        left: 50%;
+        bottom: 69px;
+        width: 58px;
+        height: 58px;
+        border: 0;
+        border-radius: 50%;
+        background: transparent center / contain no-repeat url("assets/ic_end_call.png");
+        transform: translateX(-50%);
+      }
+
+      .chat-view {
+        background: #ffffff center / cover no-repeat url("assets/frame 4.jpg");
+      }
+
+      .chat-view .back-btn {
+        position: absolute;
+        left: 15px;
+        top: 50px;
+        width: 44px;
+        height: 44px;
+        opacity: 0;
+      }
+
+      .prototype-tools {
+        position: fixed;
+        left: calc(50% + 220px);
+        top: 50%;
+        z-index: 20;
+        display: grid;
+        gap: 13px;
+        transform: translateY(-406px);
+      }
+
+      .prototype-tool {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-width: 88px;
+        height: 42px;
+        padding: 0 12px;
+        border: 0;
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.92);
+        color: #333333;
+        text-decoration: none;
+        font-size: 15px;
+        font-weight: 700;
+        letter-spacing: 0;
+        box-shadow: 0 10px 28px rgba(0, 0, 0, 0.10);
+        transition: transform 150ms ease, background 150ms ease, box-shadow 150ms ease;
+      }
+
+      .prototype-tool:hover,
+      .prototype-tool:focus-visible {
+        background: #ffffff;
+        box-shadow: 0 14px 34px rgba(0, 0, 0, 0.14);
+        transform: translateY(-1px);
+      }
+
+      .prototype-tool:active {
+        transform: translateY(1px) scale(0.98);
+      }
+
+      .prototype-tool svg {
+        width: 24px;
+        height: 24px;
+      }
+
+      @media (max-width: 430px) {
+        body {
+          display: block;
+          min-height: 812px;
+          background: #ffffff;
+        }
+
+        .phone {
+          width: 100vw;
+          max-width: 375px;
+          margin: 0 auto;
+          box-shadow: none;
+        }
+
+        .prototype-tools {
+          left: auto;
+          right: 10px;
+          top: 10px;
+          gap: 8px;
+          transform: none;
+        }
+
+        .prototype-tool {
+          min-width: 72px;
+          height: 34px;
+          padding: 0 9px;
+          font-size: 13px;
+          background: rgba(255, 255, 255, 0.94);
+        }
+
+        .prototype-tool svg {
+          width: 18px;
+          height: 18px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="phone" aria-label="Co-play mobile community screen">
+      <section class="status" aria-label="Status bar">
+        <span>9:41</span>
+        <div class="system-icons" aria-hidden="true">
+          <div class="signal"><span></span><span></span><span></span><span></span></div>
+          <div class="wifi"></div>
+          <div class="battery"></div>
+        </div>
+      </section>
+
+      <header class="topbar">
+        <div class="profile-dot" aria-hidden="true"></div>
+        <nav class="tabs" aria-label="Community sections">
+          <span>Following</span>
+          <span>Explore</span>
+          <span class="tab active">Co-play</span>
+        </nav>
+        <div class="search" aria-label="Search"></div>
+      </header>
+
+      <div class="community-scroll">
+        <section class="stories" aria-label="Remote stories">
+          <button class="story remote" type="button" data-sheet-trigger>
+            <div class="avatar remote-photo"></div>
+            <div class="remote-badge"></div>
+            <div class="story-name">Your Remote</div>
+          </button>
+          <button class="story active" type="button" data-call-trigger data-name="Kamala HQ" data-avatar="assets/avatar-kamala.jpg">
+            <div class="avatar kamala-photo"></div>
+            <div class="remote-badge"></div>
+            <div class="story-name">Kamala HQ</div>
+          </button>
+          <button class="story active" type="button" data-call-trigger data-name="IrisOOIw" data-avatar="assets/avatar-iris.jpg">
+            <div class="avatar iris-photo"></div>
+            <div class="remote-badge"></div>
+            <div class="story-name">IrisOOIw</div>
+          </button>
+          <button class="story active" type="button" data-call-trigger data-name="Jasnsk" data-avatar="assets/avatar-jasnsk.jpg">
+            <div class="avatar jasnsk-photo"></div>
+            <div class="remote-badge"></div>
+            <div class="story-name">Jasnsk</div>
+          </button>
+          <button class="story plaza-entry" type="button" data-plaza-trigger>
+            <div class="remote-entry-circle"><img src="assets/ic_arrow.svg" alt="" /></div>
+            <div class="story-name">Remote广场</div>
+          </button>
+        </section>
+
+        <section class="feed" aria-label="Posts">
+          <div class="column">
+            <article class="post">
+              <button class="post-open" type="button" data-post-trigger><span class="post-image toys" style="height: 240px"></span></button>
+              <button class="post-open post-title" type="button" data-post-trigger>How to use toys for you blabl interactive daily sex...</button>
+              <div class="post-meta">
+                <button class="author" type="button" data-profile-trigger><span class="author-dot"></span><span>Kamala HQ</span><span class="mini-heart"></span></button>
+                <button class="pill" type="button" data-profile-trigger>CHAT</button>
+              </div>
+            </article>
+            <article class="post">
+              <button class="post-open" type="button" data-post-trigger><span class="post-image toys-alt" style="height: 240px"></span></button>
+              <button class="post-open post-title" type="button" data-post-trigger>How to use toys for you blabl interactive daily sex...</button>
+              <div class="post-meta">
+                <button class="author" type="button" data-profile-trigger><span class="author-dot"></span><span>Kamala HQ</span><span class="mini-heart"></span></button>
+                <button class="pill" type="button" data-profile-trigger>CHAT</button>
+              </div>
+            </article>
+            <article class="post">
+              <button class="post-open" type="button" data-post-trigger><span class="post-image blue sale" style="height: 119px"></span></button>
+              <button class="post-open post-title" type="button" data-post-trigger>Black Friday “SALE” UP TO 50%🤤</button>
+              <div class="post-meta">
+                <button class="author" type="button" data-profile-trigger><span class="author-dot purple"></span><span>Joyhub</span><span class="mini-heart"></span></button>
+                <button class="pill" type="button" data-profile-trigger>CHAT</button>
+              </div>
+            </article>
+            <article class="post">
+              <button class="post-open" type="button" data-post-trigger><span class="post-image where" style="height: 202px"></span></button>
+              <button class="post-open post-title" type="button" data-post-trigger>Remote night walk and a little story...</button>
+              <div class="post-meta">
+                <button class="author" type="button" data-profile-trigger><span class="author-dot"></span><span>Vivian</span><span class="mini-heart"></span></button>
+                <button class="pill" type="button" data-profile-trigger>CHAT</button>
+              </div>
+            </article>
+            <article class="post">
+              <button class="post-open" type="button" data-post-trigger><span class="post-image blue sale" style="height: 119px"></span></button>
+              <button class="post-open post-title" type="button" data-post-trigger>Weekend toys combo for couples</button>
+              <div class="post-meta">
+                <button class="author" type="button" data-profile-trigger><span class="author-dot purple"></span><span>Suger</span><span class="mini-heart"></span></button>
+                <button class="pill" type="button" data-profile-trigger>CHAT</button>
+              </div>
+            </article>
+          </div>
+
+          <div class="column">
+            <article class="post">
+              <button class="post-open" type="button" data-post-trigger><span class="post-image blue sale" style="height: 119px"></span></button>
+              <button class="post-open post-title" type="button" data-post-trigger>Black Friday “SALE” UP TO 50%🤤</button>
+              <div class="post-meta">
+                <button class="author" type="button" data-profile-trigger><span class="author-dot purple"></span><span>Joyhub</span><span class="mini-heart"></span></button>
+                <button class="pill" type="button" data-profile-trigger>CHAT</button>
+              </div>
+            </article>
+            <article class="post">
+              <button class="post-open" type="button" data-post-trigger><span class="post-image talk" style="height: 202px"></span></button>
+              <button class="post-open post-title" type="button" data-post-trigger>Guys...Let's talk about our favorite toy! I like...</button>
+              <div class="post-meta">
+                <button class="author" type="button" data-profile-trigger><span class="author-dot"></span><span>Kamala HQ</span></button>
+                <button class="pill" type="button" data-profile-trigger>CHAT</button>
+              </div>
+            </article>
+            <article class="post">
+              <button class="post-open" type="button" data-post-trigger><span class="post-image where" style="height: 202px"></span></button>
+              <button class="post-open post-title" type="button" data-post-trigger>Where we go next?</button>
+              <div class="post-meta">
+                <button class="author" type="button" data-profile-trigger><span class="author-dot"></span><span>wony</span></button>
+                <button class="pill" type="button" data-profile-trigger>CHAT</button>
+              </div>
+            </article>
+            <article class="post">
+              <button class="post-open" type="button" data-post-trigger><span class="post-image toys-alt" style="height: 202px"></span></button>
+              <button class="post-open post-title" type="button" data-post-trigger>Trying a new setup tonight...</button>
+              <div class="post-meta">
+                <button class="author" type="button" data-profile-trigger><span class="author-dot"></span><span>Mr.Ben</span><span class="mini-heart"></span></button>
+                <button class="pill" type="button" data-profile-trigger>CHAT</button>
+              </div>
+            </article>
+            <article class="post">
+              <button class="post-open" type="button" data-post-trigger><span class="post-image toys" style="height: 240px"></span></button>
+              <button class="post-open post-title" type="button" data-post-trigger>The most comfortable way to start remote play</button>
+              <div class="post-meta">
+                <button class="author" type="button" data-profile-trigger><span class="author-dot"></span><span>ZoeIny</span><span class="mini-heart"></span></button>
+                <button class="pill" type="button" data-profile-trigger>CHAT</button>
+              </div>
+            </article>
+          </div>
+        </section>
+      </div>
+
+      <button class="fab" aria-label="Create"></button>
+
+
+
+      <div class="sheet-layer" id="remoteSheet" aria-hidden="true">
+        <button class="scrim" type="button" data-sheet-close aria-label="Close settings"></button>
+        <section class="remote-sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+          <h2 class="sheet-title" id="sheetTitle">玩具名字 <span class="tag">标签</span></h2>
+          <p class="sheet-subtitle">⇄ Switch toys</p>
+          <div class="toy-preview" aria-hidden="true"></div>
+          <button class="connect-btn" type="button">Click to connect</button>
+
+          <div class="settings-group">
+            <p class="settings-label">我在广场的状态</p>
+            <div class="option-grid" data-plaza-status-options>
+              <button class="choice is-selected" type="button" data-plaza-status="visible"><span class="radio-dot"></span>广场可见中</button>
+              <button class="choice" type="button" data-plaza-status="hidden"><span class="radio-dot"></span>隐身浏览中</button>
+            </div>
+          </div>
+
+          <div class="settings-group">
+            <p class="settings-label">谁可以看到我</p>
+            <div class="option-grid">
+              <button class="choice is-selected" type="button"><span class="radio-dot"></span>所有人</button>
+              <button class="choice" type="button"><span class="radio-dot"></span>仅好友</button>
+            </div>
+          </div>
+
+          <div class="settings-group">
+            <p class="settings-label">我的角色喜好</p>
+            <div class="option-grid">
+              <button class="role-card is-selected" type="button"><img src="assets/SM.svg" alt="" />Straight Man</button>
+              <button class="role-card" type="button"><img src="assets/SW.svg" alt="" />Straight Woman</button>
+              <button class="role-card" type="button"><img src="assets/GT.svg" alt="" />Gay Top</button>
+              <button class="role-card" type="button"><img src="assets/GB.svg" alt="" />Gay Bottom</button>
+              <button class="role-card" type="button"><img src="assets/LB.svg" alt="" />Lesbian Butch</button>
+              <button class="role-card" type="button"><img src="assets/LF.svg" alt="" />Lesbian Femme</button>
+            </div>
+          </div>
+
+          <button class="confirm-btn" type="button" data-sheet-close>确定</button>
+        </section>
+      </div>
+
+
+
+
+
+
+
+
+
+      <section class="app-view post-viewer" id="postViewer" aria-hidden="true">
+        <img class="post-detail-image" src="assets/post.jpg" alt="Post detail" />
+        <button class="post-back" type="button" aria-label="Back"></button>
+      </section>
+
+      <section class="app-view profile-viewer" id="profileViewer" aria-hidden="true">
+        <img class="profile-image" src="assets/profile_viewer.jpg" alt="Profile viewer" />
+        <button class="profile-back" type="button" aria-label="Back"></button>
+      </section>
+
+      <section class="app-view remote-plaza" id="remotePlaza" aria-hidden="true">
+        <section class="status" aria-label="Status bar"><span>9:41</span></section>
+        <header class="plaza-header">
+          <button class="plaza-back" type="button" aria-label="Back">‹</button>
+          Remote广场
+        </header>
+        <div class="plaza-scroll">
+          <div class="plaza-tip">
+            <span>如果不希望广场上非好友的用户联系你，可以在这里设置</span>
+            <button class="plaza-visibility" type="button" data-sheet-trigger><span class="green-dot"></span><span class="plaza-status-text">广场可见中</span> ›</button>
+          </div>
+          <section class="remote-list" aria-label="Remote people">
+            <button class="remote-card" type="button" data-profile-trigger data-name="Vivian" data-avatar="assets/avatar-iris.jpg">
+              <span class="remote-card-avatar" style="background-image: url('assets/avatar-iris.jpg')"></span>
+              <span class="remote-card-info"><h3>Vivian <img src="assets/ic_badge_level.png" alt="" /></h3><p>I am Vivian. The woman who writes a diary...</p><span class="remote-toys"><img src="assets/toy-a.png" alt="" /><img src="assets/toy-b.png" alt="" /></span></span>
+              <span class="remote-action" data-call-trigger><img src="assets/ic_remote.svg" alt="" /></span>
+            </button>
+            <button class="remote-card" type="button" data-profile-trigger data-name="Suger" data-avatar="assets/avatar-remote.jpg">
+              <span class="remote-card-avatar" style="background-image: url('assets/avatar-remote.jpg')"></span>
+              <span class="remote-card-info"><h3>Suger <img src="assets/ic_badge_level.png" alt="" /></h3><p>OMGOMGOMGOMG</p><span class="remote-toys"><img src="assets/toy-c.png" alt="" /></span></span>
+              <span class="remote-action" data-call-trigger><img src="assets/ic_remote.svg" alt="" /></span>
+            </button>
+            <button class="remote-card" type="button" data-profile-trigger data-name="Suger" data-avatar="assets/avatar-jasnsk.jpg">
+              <span class="remote-card-avatar" style="background-image: url('assets/avatar-jasnsk.jpg')"></span>
+              <span class="remote-card-info"><h3>Suger <img src="assets/ic_badge_level.png" alt="" /></h3><p>OMGOMGOMGOMG</p><span class="remote-toys"><img src="assets/toy-c.png" alt="" /></span></span>
+              <span class="remote-action" data-call-trigger><img src="assets/ic_remote.svg" alt="" /></span>
+            </button>
+            <button class="remote-card male" type="button" data-profile-trigger data-name="Mr.Ben" data-avatar="assets/avatar-kamala.jpg">
+              <span class="remote-card-avatar" style="background-image: url('assets/avatar-kamala.jpg')"></span>
+              <span class="remote-card-info"><h3>Mr.Ben <img src="assets/ic_badge_level.png" alt="" /></h3><p>hihihi</p><span class="remote-toys"><img src="assets/toy-a.png" alt="" /><img src="assets/toy-b.png" alt="" /></span></span>
+              <span class="remote-action" data-call-trigger><img src="assets/ic_remote.svg" alt="" /></span>
+            </button>
+            <button class="remote-card male" type="button" data-profile-trigger data-name="ZoeIny" data-avatar="assets/avatar-iris.jpg">
+              <span class="remote-card-avatar" style="background-image: url('assets/avatar-iris.jpg')"></span>
+              <span class="remote-card-info"><h3>ZoeIny <img src="assets/ic_badge_level.png" alt="" /></h3><p>Where's my baby</p><span class="remote-toys"><img src="assets/toy-a.png" alt="" /><img src="assets/toy-b.png" alt="" /></span></span>
+              <span class="remote-action" data-call-trigger><img src="assets/ic_remote.svg" alt="" /></span>
+            </button>
+            <button class="remote-card male" type="button" data-profile-trigger data-name="Mr.Ben" data-avatar="assets/avatar-jasnsk.jpg">
+              <span class="remote-card-avatar" style="background-image: url('assets/avatar-jasnsk.jpg')"></span>
+              <span class="remote-card-info"><h3>Mr.Ben <img src="assets/ic_badge_level.png" alt="" /></h3><p>hihihi</p><span class="remote-toys"><img src="assets/toy-a.png" alt="" /><img src="assets/toy-b.png" alt="" /></span></span>
+              <span class="remote-action" data-call-trigger><img src="assets/ic_remote.svg" alt="" /></span>
+            </button>
+          </section>
+        </div>
+        <button class="quick-start" type="button" data-call-trigger data-name="Vivian" data-avatar="assets/avatar-iris.jpg">快速开始</button>
+        <div class="home-indicator"></div>
+      </section>
+
+      <section class="app-view call-view" id="callView" aria-hidden="true">
+        <section class="status" aria-label="Status bar">
+          <span>9:41</span>
+          <div class="system-icons" aria-hidden="true">
+            <div class="signal"><span></span><span></span><span></span><span></span></div>
+            <div class="wifi"></div>
+            <div class="battery"></div>
+          </div>
+        </section>
+        <div class="call-content">
+          <div class="call-avatar"></div>
+          <h1 class="call-name">Kamala HQ</h1>
+          <p class="call-status">等待对方接受邀请......</p>
+        </div>
+        <button class="hangup-btn" type="button" aria-label="Hang up"></button>
+        <div class="home-indicator"></div>
+      </section>
+
+      <section class="app-view chat-view" id="chatView" aria-hidden="true">
+        <button class="back-btn" type="button" aria-label="Back"></button>
+      </section>
+
+      <footer class="bottom-nav">
+        <div class="nav-items">
+          <div class="nav-item">
+            <span class="nav-icon home-icon"></span>
+            <span>Home</span>
+          </div>
+          <div class="nav-item">
+            <span class="nav-icon community-icon"></span>
+            <span>Community</span>
+          </div>
+          <div class="nav-item">
+            <span class="nav-icon chat-icon"></span>
+            <span>Chats</span>
+            <span class="badge">99+</span>
+          </div>
+          <div class="nav-item">
+            <span class="nav-icon me-icon"></span>
+            <span>Me</span>
+          </div>
+        </div>
+        <div class="home-indicator"></div>
+      </footer>
+    </main>
+
+    <nav class="prototype-tools" aria-label="原型工具">
+      <a class="prototype-tool" href="../index.html">返回目录</a>
+      <button class="prototype-tool" type="button" id="resetPrototype">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M6.2 7.2A7.5 7.5 0 1 1 5 12.5" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/>
+          <path d="M6 3.8v3.8h3.8" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        刷新
+      </button>
+    </nav>
+
+    <script>
+      const communityScroll = document.querySelector('.community-scroll');
+      const storiesLane = document.querySelector('.stories');
+      const feed = document.querySelector('.feed');
+      const sheet = document.querySelector('#remoteSheet');
+      const postViewer = document.querySelector('#postViewer');
+      const profileViewer = document.querySelector('#profileViewer');
+      const plazaView = document.querySelector('#remotePlaza');
+      const callView = document.querySelector('#callView');
+      const chatView = document.querySelector('#chatView');
+      const hangupBtn = document.querySelector('.hangup-btn');
+      const backBtn = document.querySelector('.back-btn');
+      const callAvatar = document.querySelector('.call-avatar');
+      const callName = document.querySelector('.call-name');
+      const plazaVisibility = document.querySelector('.plaza-visibility');
+      const plazaStatusText = document.querySelector('.plaza-status-text');
+      const resetPrototype = document.querySelector('#resetPrototype');
+      let callTimer;
+
+      const setView = (view) => {
+        [postViewer, profileViewer, plazaView, callView, chatView].forEach((screen) => {
+          const active = screen === view;
+          screen.classList.toggle('is-active', active);
+          screen.setAttribute('aria-hidden', String(!active));
+        });
+      };
+      const openSheet = () => {
+        sheet.classList.add('is-open');
+        sheet.setAttribute('aria-hidden', 'false');
+      };
+      const closeSheet = () => {
+        sheet.classList.remove('is-open');
+        sheet.setAttribute('aria-hidden', 'true');
+      };
+      const startCall = (person) => {
+        closeSheet();
+        callName.textContent = person.name;
+        callAvatar.style.backgroundImage = `url("${person.avatar}")`;
+        setView(callView);
+        clearTimeout(callTimer);
+        callTimer = setTimeout(() => setView(chatView), 5000);
+      };
+      const returnHome = () => {
+        clearTimeout(callTimer);
+        setView(null);
+      };
+
+
+      let laneStartX = 0;
+      let laneStartY = 0;
+      let laneStartScroll = 0;
+      let laneStartPageScroll = 0;
+      let laneDragging = false;
+      let laneMoved = false;
+      let laneTapTarget = null;
+
+      const activateLaneTarget = (target) => {
+        const trigger = target.closest('[data-sheet-trigger], [data-plaza-trigger], [data-call-trigger]');
+        if (!trigger) return;
+        if (trigger.hasAttribute('data-sheet-trigger')) {
+          openSheet();
+          return;
+        }
+        if (trigger.hasAttribute('data-plaza-trigger')) {
+          setView(plazaView);
+          return;
+        }
+        if (trigger.hasAttribute('data-call-trigger')) {
+          startCall({
+            name: trigger.dataset.name,
+            avatar: trigger.dataset.avatar,
+          });
+        }
+      };
+
+      storiesLane.addEventListener('pointerdown', (event) => {
+        laneDragging = true;
+        laneMoved = false;
+        laneTapTarget = event.target;
+        laneStartX = event.clientX;
+        laneStartY = event.clientY;
+        laneStartScroll = storiesLane.scrollLeft;
+        laneStartPageScroll = communityScroll.scrollTop;
+        storiesLane.classList.add('is-dragging');
+        storiesLane.setPointerCapture(event.pointerId);
+      });
+
+      storiesLane.addEventListener('pointermove', (event) => {
+        if (!laneDragging) return;
+        const deltaX = event.clientX - laneStartX;
+        const deltaY = event.clientY - laneStartY;
+        if (Math.hypot(deltaX, deltaY) > 6) laneMoved = true;
+        if (Math.abs(deltaY) > Math.abs(deltaX)) {
+          communityScroll.scrollTop = laneStartPageScroll - deltaY;
+          return;
+        }
+        storiesLane.scrollLeft = laneStartScroll - deltaX;
+      });
+
+      storiesLane.addEventListener('pointerup', (event) => {
+        if (!laneDragging) return;
+        const target = laneTapTarget || event.target;
+        const wasTap = !laneMoved;
+        laneDragging = false;
+        laneMoved = false;
+        laneTapTarget = null;
+        storiesLane.classList.remove('is-dragging');
+        if (wasTap) activateLaneTarget(target);
+      });
+
+      storiesLane.addEventListener('pointercancel', () => {
+        laneDragging = false;
+        laneMoved = false;
+        laneTapTarget = null;
+        storiesLane.classList.remove('is-dragging');
+      });
+
+      storiesLane.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+      }, true);
+
+      storiesLane.addEventListener('wheel', (event) => {
+        event.preventDefault();
+        if (Math.abs(event.deltaX) > Math.abs(event.deltaY)) {
+          storiesLane.scrollLeft += event.deltaX;
+          return;
+        }
+        communityScroll.scrollTop += event.deltaY;
+      }, { passive: false });
+
+      document.querySelectorAll('[data-sheet-trigger]').forEach((trigger) => {
+        if (trigger.closest('.stories')) return;
+        trigger.addEventListener('click', openSheet);
+      });
+
+      document.querySelectorAll('[data-plaza-trigger]').forEach((trigger) => {
+        if (trigger.closest('.stories')) return;
+        trigger.addEventListener('click', () => setView(plazaView));
+      });
+
+      document.querySelectorAll('[data-call-trigger]').forEach((trigger) => {
+        if (trigger.closest('.stories')) return;
+        trigger.addEventListener('click', (event) => {
+          event.stopPropagation();
+          const card = trigger.closest('[data-name][data-avatar]');
+          startCall({
+            name: trigger.dataset.name || card?.dataset.name,
+            avatar: trigger.dataset.avatar || card?.dataset.avatar,
+          });
+        });
+      });
+
+
+
+      let feedStartY = 0;
+      let feedStartScroll = 0;
+      let feedDragging = false;
+      let feedMoved = false;
+      let feedTapTarget = null;
+
+      feed.addEventListener('pointerdown', (event) => {
+        feedDragging = true;
+        feedMoved = false;
+        feedTapTarget = event.target;
+        feedStartY = event.clientY;
+        feedStartScroll = communityScroll.scrollTop;
+        feed.classList.add('is-dragging');
+        feed.setPointerCapture(event.pointerId);
+      });
+
+      feed.addEventListener('pointermove', (event) => {
+        if (!feedDragging) return;
+        const delta = event.clientY - feedStartY;
+        if (Math.abs(delta) > 6) feedMoved = true;
+        communityScroll.scrollTop = feedStartScroll - delta;
+      });
+
+      feed.addEventListener('pointerup', (event) => {
+        if (!feedDragging) return;
+        const chatTarget = feedTapTarget?.closest('.pill[data-profile-trigger]');
+        const postTarget = feedTapTarget?.closest('[data-post-trigger]');
+        const profileTarget = feedTapTarget?.closest('[data-profile-trigger]');
+        const wasTap = !feedMoved;
+        feedDragging = false;
+        feedMoved = false;
+        feedTapTarget = null;
+        feed.classList.remove('is-dragging');
+        if (!wasTap) return;
+        if (chatTarget) {
+          setView(chatView);
+          return;
+        }
+        if (postTarget) {
+          postViewer.scrollTop = 0;
+          setView(postViewer);
+          return;
+        }
+        if (profileTarget) {
+          profileViewer.scrollTop = 0;
+          setView(profileViewer);
+        }
+      });
+
+      feed.addEventListener('pointercancel', () => {
+        feedDragging = false;
+        feedMoved = false;
+        feedTapTarget = null;
+        feed.classList.remove('is-dragging');
+      });
+
+      feed.addEventListener('click', (event) => {
+        const target = event.target.closest('[data-profile-trigger], [data-post-trigger]');
+        if (!target) return;
+        event.preventDefault();
+        event.stopPropagation();
+      }, true);
+
+      feed.addEventListener('wheel', (event) => {
+        event.preventDefault();
+        communityScroll.scrollTop += event.deltaY;
+      }, { passive: false });
+
+      communityScroll.addEventListener('scroll', () => {
+        const atBottom = communityScroll.scrollTop + communityScroll.clientHeight >= communityScroll.scrollHeight - 2;
+        if (!atBottom || communityScroll.classList.contains('is-bouncing')) return;
+        communityScroll.classList.add('is-bouncing');
+        setTimeout(() => communityScroll.classList.remove('is-bouncing'), 330);
+      });
+
+      document.querySelectorAll('[data-profile-trigger]').forEach((trigger) => {
+        trigger.addEventListener('click', () => {
+          profileViewer.scrollTop = 0;
+          setView(profileViewer);
+        });
+      });
+
+      document.querySelectorAll('[data-post-trigger]').forEach((trigger) => {
+        trigger.addEventListener('click', () => {
+          postViewer.scrollTop = 0;
+          setView(postViewer);
+        });
+      });
+
+      document.querySelectorAll('.pill[data-profile-trigger]').forEach((trigger) => {
+        trigger.addEventListener('click', (event) => {
+          event.stopPropagation();
+          setView(chatView);
+        });
+      });
+
+      document.querySelector('.profile-back').addEventListener('click', returnHome);
+      document.querySelector('.post-back').addEventListener('click', returnHome);
+
+      document.querySelectorAll('[data-sheet-close]').forEach((trigger) => {
+        trigger.addEventListener('click', closeSheet);
+      });
+
+      hangupBtn.addEventListener('click', returnHome);
+      backBtn.addEventListener('click', returnHome);
+      document.querySelector('.plaza-back').addEventListener('click', returnHome);
+
+
+      document.querySelectorAll('[data-plaza-status]').forEach((button) => {
+        button.addEventListener('click', () => {
+          const hidden = button.dataset.plazaStatus === 'hidden';
+          plazaVisibility.classList.toggle('is-hidden', hidden);
+          plazaStatusText.textContent = hidden ? '隐身浏览中' : '广场可见中';
+        });
+      });
+
+      document.querySelectorAll('.choice, .role-card').forEach((button) => {
+        button.addEventListener('click', () => {
+          const group = button.closest('.option-grid');
+          group.querySelectorAll('.is-selected').forEach((item) => item.classList.remove('is-selected'));
+          button.classList.add('is-selected');
+        });
+      });
+
+      resetPrototype.addEventListener('click', () => {
+        window.location.reload();
+      });
+    </script>
+  </body>
+</html>

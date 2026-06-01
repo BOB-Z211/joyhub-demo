@@ -1,0 +1,1088 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Search Prototype - ID and Room</title>
+  <style>
+    :root {
+      --ink: #2e3136;
+      --muted: #9d9fa3;
+      --line: #f0f1f3;
+      --soft: #f6f6f7;
+      --accent: #ff4f70;
+      --ok: #22b06b;
+      --warn: #f0a500;
+      --bg: #ffffff;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: #eceff3;
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      letter-spacing: 0;
+    }
+
+    .phone {
+      width: min(100vw, 430px);
+      min-height: 100vh;
+      margin: 0 auto;
+      background: var(--bg);
+      overflow: hidden;
+    }
+
+    .status {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 48px;
+      padding: 0 24px;
+      font-size: 19px;
+      font-weight: 750;
+    }
+
+    .status-icons {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      color: #050506;
+    }
+
+    .signal {
+      display: flex;
+      align-items: end;
+      gap: 2px;
+      height: 17px;
+    }
+
+    .signal span {
+      display: block;
+      width: 4px;
+      border-radius: 2px;
+      background: currentColor;
+    }
+
+    .signal span:nth-child(1) { height: 7px; }
+    .signal span:nth-child(2) { height: 11px; }
+    .signal span:nth-child(3) { height: 15px; opacity: .35; }
+
+    .wifi {
+      width: 25px;
+      height: 18px;
+      position: relative;
+    }
+
+    .wifi::before,
+    .wifi::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 4px solid transparent;
+      border-top-color: currentColor;
+      border-radius: 50%;
+    }
+
+    .wifi::before {
+      width: 25px;
+      height: 25px;
+      top: 0;
+    }
+
+    .wifi::after {
+      width: 12px;
+      height: 12px;
+      top: 8px;
+    }
+
+    .battery {
+      width: 30px;
+      height: 15px;
+      border: 2px solid #8d8f93;
+      border-radius: 5px;
+      position: relative;
+      padding: 2px;
+    }
+
+    .battery::before {
+      content: "";
+      display: block;
+      width: 13px;
+      height: 100%;
+      background: #050506;
+      border-radius: 2px;
+    }
+
+    .battery::after {
+      content: "";
+      position: absolute;
+      right: -5px;
+      top: 4px;
+      width: 2px;
+      height: 6px;
+      background: #8d8f93;
+      border-radius: 0 2px 2px 0;
+    }
+
+    .search-row {
+      display: grid;
+      grid-template-columns: 40px 1fr;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 18px 12px;
+    }
+
+    .back {
+      width: 34px;
+      height: 34px;
+      border: 0;
+      background: transparent;
+      padding: 0;
+      position: relative;
+    }
+
+    .back::before {
+      content: "";
+      position: absolute;
+      left: 10px;
+      top: 6px;
+      width: 17px;
+      height: 17px;
+      border-left: 4px solid #34363a;
+      border-bottom: 4px solid #34363a;
+      transform: rotate(45deg);
+      border-radius: 2px;
+    }
+
+    .search-box {
+      height: 48px;
+      border-radius: 999px;
+      background: var(--soft);
+      display: grid;
+      grid-template-columns: 34px 1fr 30px;
+      align-items: center;
+      padding: 0 15px 0 18px;
+    }
+
+    .magnifier {
+      width: 21px;
+      height: 21px;
+      border: 3px solid #a9aaae;
+      border-radius: 50%;
+      position: relative;
+    }
+
+    .magnifier::after {
+      content: "";
+      position: absolute;
+      right: -8px;
+      bottom: -6px;
+      width: 10px;
+      height: 3px;
+      border-radius: 2px;
+      background: #a9aaae;
+      transform: rotate(45deg);
+    }
+
+    input {
+      width: 100%;
+      min-width: 0;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: var(--ink);
+      font-size: 21px;
+      font-weight: 520;
+    }
+
+    input::placeholder {
+      color: #a4a5a9;
+    }
+
+    .clear {
+      width: 24px;
+      height: 24px;
+      border: 0;
+      border-radius: 50%;
+      background: #dadcdf;
+      color: #fff;
+      font-size: 17px;
+      line-height: 22px;
+      display: none;
+    }
+
+    .tabs {
+      display: flex;
+      align-items: flex-end;
+      height: 56px;
+      padding: 0 18px;
+      border-bottom: 1px solid var(--line);
+      gap: 46px;
+    }
+
+    .tab {
+      height: 56px;
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      font-size: 20px;
+      font-weight: 520;
+      padding: 0 0 14px;
+      position: relative;
+    }
+
+    .tab.active {
+      color: var(--ink);
+      font-weight: 700;
+    }
+
+    .tab.active::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 108px;
+      height: 2px;
+      border-radius: 2px;
+      background: var(--ink);
+    }
+
+    .content {
+      min-height: calc(100vh - 166px);
+    }
+
+    .trend-row {
+      display: grid;
+      grid-template-columns: 34px 1fr auto;
+      align-items: center;
+      gap: 20px;
+      min-height: 68px;
+      padding: 0 18px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .rank {
+      color: #999b9f;
+      font-size: 18px;
+      font-style: italic;
+      font-weight: 780;
+    }
+
+    .rank.hot {
+      color: var(--accent);
+    }
+
+    .term {
+      color: var(--ink);
+      font-size: 18px;
+      font-weight: 690;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .score {
+      color: #9a9ca0;
+      font-size: 16px;
+      font-weight: 520;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .score.hot {
+      color: var(--accent);
+      font-size: 17px;
+    }
+
+    .hint {
+      margin: 16px 18px 10px;
+      color: #8c8e93;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .section-title {
+      padding: 8px 18px 10px;
+      color: #64676d;
+      font-size: 15px;
+      font-weight: 720;
+    }
+
+    .card {
+      margin: 0 18px 12px;
+      min-height: 84px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      display: grid;
+      grid-template-columns: 60px 1fr 22px;
+      align-items: center;
+      gap: 13px;
+      background: #fff;
+      box-shadow: 0 2px 8px rgba(25, 28, 34, 0.03);
+    }
+
+    .avatar {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: #eef0f3 center / cover no-repeat;
+    }
+
+    .room-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: #f2f2f2 center / cover no-repeat url("assets/room_cover_default.png");
+    }
+
+    .room-badge {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      margin-left: 5px;
+      background: center / contain no-repeat url("assets/ic-room.png");
+      vertical-align: -2px;
+    }
+
+    .card h3 {
+      margin: 0 0 4px;
+      color: var(--ink);
+      font-size: 18px;
+      font-weight: 800;
+      line-height: 1.2;
+    }
+
+    .meta {
+      color: #62656b;
+      font-size: 15px;
+      line-height: 1.45;
+    }
+
+    .card-action {
+      border: 0;
+      width: 22px;
+      height: 42px;
+      background: transparent;
+      position: relative;
+    }
+
+    .card-action::before {
+      content: "";
+      position: absolute;
+      right: 4px;
+      top: 12px;
+      width: 13px;
+      height: 13px;
+      border-right: 3px solid #b8bbc3;
+      border-top: 3px solid #b8bbc3;
+      transform: rotate(45deg);
+    }
+
+    .match {
+      color: var(--accent);
+      font-weight: 780;
+    }
+
+    .post-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 20px 8px;
+      padding: 0 8px 48px;
+    }
+
+    .post-card {
+      min-width: 0;
+    }
+
+    .post-card.wide {
+      grid-column: span 1;
+    }
+
+    .post-image {
+      width: 100%;
+      aspect-ratio: 1 / 1.32;
+      border-radius: 8px;
+      background:
+        radial-gradient(circle at 50% 26%, rgba(255,255,255,.88) 0 8%, transparent 9%),
+        linear-gradient(145deg, #ffd1df, #7bb7d8);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .post-image::before,
+    .post-image::after {
+      content: "";
+      position: absolute;
+      border-radius: 999px;
+      background: rgba(255,255,255,.72);
+    }
+
+    .post-image::before {
+      width: 44%;
+      height: 54%;
+      left: 28%;
+      top: 30%;
+    }
+
+    .post-image::after {
+      width: 70%;
+      height: 22%;
+      left: 15%;
+      bottom: 8%;
+      background: rgba(36,39,45,.18);
+    }
+
+    .post-image.alt-one {
+      background:
+        radial-gradient(circle at 50% 22%, rgba(255,236,245,.95) 0 10%, transparent 11%),
+        linear-gradient(145deg, #ffe4ba, #7c4a96);
+    }
+
+    .post-image.alt-two {
+      background:
+        radial-gradient(circle at 52% 24%, rgba(255,244,249,.95) 0 10%, transparent 11%),
+        linear-gradient(145deg, #ffe7f3, #f4a7ca);
+    }
+
+    .post-title {
+      margin: 10px 8px 8px;
+      color: var(--ink);
+      font-size: 18px;
+      font-weight: 680;
+      line-height: 1.18;
+    }
+
+    .post-meta-row {
+      display: grid;
+      grid-template-columns: 24px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 6px;
+      margin: 0 8px;
+      color: #6f7278;
+      font-size: 13px;
+    }
+
+    .mini-avatar {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #1f2937, #e47c97);
+    }
+
+    .author {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .suspended {
+      display: inline-flex;
+      align-items: center;
+      height: 18px;
+      margin-left: 4px;
+      padding: 0 6px;
+      border-radius: 4px;
+      background: #ffe1e4;
+      color: #ff2e47;
+      font-size: 12px;
+      font-weight: 650;
+      vertical-align: 1px;
+    }
+
+    .verified {
+      display: inline-grid;
+      place-items: center;
+      width: 16px;
+      height: 16px;
+      margin-left: 4px;
+      border-radius: 50%;
+      background: #4c9dff;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 900;
+    }
+
+    .likes {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      color: #696c72;
+      font-size: 13px;
+    }
+
+    .heart {
+      width: 18px;
+      height: 18px;
+      position: relative;
+      transform: rotate(-45deg);
+      border-left: 2px solid currentColor;
+      border-bottom: 2px solid currentColor;
+      border-radius: 0 0 0 4px;
+    }
+
+    .heart::before,
+    .heart::after {
+      content: "";
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      border: 2px solid currentColor;
+      border-bottom: 0;
+      border-right: 0;
+      border-radius: 10px 10px 0 0;
+      background: #fff;
+    }
+
+    .heart::before {
+      left: -2px;
+      top: -8px;
+      transform: rotate(45deg);
+    }
+
+    .heart::after {
+      right: -8px;
+      bottom: -2px;
+      transform: rotate(135deg);
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 28px;
+      transform: translateX(-50%);
+      width: min(360px, calc(100vw - 44px));
+      min-height: 44px;
+      border-radius: 8px;
+      background: rgba(34, 37, 42, .92);
+      color: #fff;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 14px;
+      text-align: center;
+      font-size: 14px;
+      font-weight: 650;
+      z-index: 10;
+    }
+
+    .password-layer {
+      position: fixed;
+      inset: 0;
+      z-index: 30;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: rgba(20, 22, 26, 0.28);
+    }
+
+    .password-layer.is-open {
+      display: flex;
+    }
+
+    .password-dialog {
+      width: min(320px, 100%);
+      padding: 22px;
+      border-radius: 18px;
+      background: #fff;
+      box-shadow: 0 20px 50px rgba(20, 24, 32, 0.18);
+    }
+
+    .password-dialog h2 {
+      margin: 0 0 8px;
+      color: var(--ink);
+      font-size: 19px;
+    }
+
+    .password-dialog p {
+      margin: 0 0 16px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .password-input {
+      width: 100%;
+      height: 44px;
+      margin-bottom: 16px;
+      padding: 0 14px;
+      border: 0;
+      border-radius: 12px;
+      background: var(--soft);
+      text-align: center;
+      letter-spacing: 6px;
+      font-size: 20px;
+      font-weight: 750;
+    }
+
+    .password-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .password-actions button {
+      min-width: 70px;
+      height: 38px;
+      border: 0;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 750;
+    }
+
+    .password-cancel {
+      background: #f1f2f4;
+      color: #62656b;
+    }
+
+    .password-confirm {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .empty {
+      padding: 90px 32px 0;
+      text-align: center;
+      color: var(--muted);
+    }
+
+    .empty-mark {
+      width: 76px;
+      height: 76px;
+      margin: 0 auto 18px;
+      border-radius: 50%;
+      background: var(--soft);
+      display: grid;
+      place-items: center;
+      color: #c4c6ca;
+      font-size: 34px;
+      font-weight: 800;
+    }
+
+    .empty h2 {
+      margin: 0 0 8px;
+      color: var(--ink);
+      font-size: 20px;
+    }
+
+    .empty p {
+      margin: 0;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    @media (min-width: 520px) {
+      body {
+        padding: 24px 0;
+      }
+
+      .phone {
+        min-height: 844px;
+        border-radius: 32px;
+        box-shadow: 0 22px 60px rgba(20, 24, 32, .18);
+      }
+    }
+
+    .prototype-tools {
+      position: fixed;
+      left: calc(50% + 242px);
+      top: 24px;
+      z-index: 20;
+      display: grid;
+      gap: 13px;
+    }
+
+    .prototype-tool {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-width: 88px;
+      height: 42px;
+      padding: 0 12px;
+      border: 0;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.92);
+      color: #333333;
+      text-decoration: none;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0;
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.10);
+      transition: transform 150ms ease, background 150ms ease, box-shadow 150ms ease;
+    }
+
+    .prototype-tool:hover,
+    .prototype-tool:focus-visible {
+      background: #ffffff;
+      box-shadow: 0 14px 34px rgba(0, 0, 0, 0.14);
+      transform: translateY(-1px);
+    }
+
+    .prototype-tool:active {
+      transform: translateY(1px) scale(0.98);
+    }
+
+    .prototype-tool svg {
+      width: 24px;
+      height: 24px;
+    }
+
+    @media (max-width: 620px) {
+      .prototype-tools {
+        left: auto;
+        right: 10px;
+        top: 10px;
+        gap: 8px;
+      }
+
+      .prototype-tool {
+        min-width: 72px;
+        height: 34px;
+        padding: 0 9px;
+        font-size: 13px;
+        background: rgba(255, 255, 255, 0.94);
+      }
+
+      .prototype-tool svg {
+        width: 18px;
+        height: 18px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="phone" aria-label="Search prototype">
+    <div class="status">
+      <div>01:11</div>
+      <div class="status-icons" aria-hidden="true">
+        <div class="signal"><span></span><span></span><span></span></div>
+        <div class="wifi"></div>
+        <div class="battery"></div>
+      </div>
+    </div>
+
+    <div class="search-row">
+      <button class="back" aria-label="Back"></button>
+      <label class="search-box">
+        <span class="magnifier" aria-hidden="true"></span>
+        <input id="query" type="search" value="5201314" placeholder="Search" autocomplete="off" inputmode="search" aria-label="Search">
+        <button id="clear" class="clear" type="button" aria-label="Clear">×</button>
+      </label>
+    </div>
+
+    <nav class="tabs" aria-label="Search tabs">
+      <button class="tab active" type="button" data-tab="trending">Trending Now</button>
+      <button class="tab" type="button" data-tab="for-you">For You</button>
+    </nav>
+
+    <section id="content" class="content"></section>
+  </main>
+
+  <nav class="prototype-tools" aria-label="原型工具">
+    <a class="prototype-tool" href="../index.html">返回目录</a>
+    <button class="prototype-tool" type="button" id="resetPrototype">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M6.2 7.2A7.5 7.5 0 1 1 5 12.5" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/>
+        <path d="M6 3.8v3.8h3.8" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      刷新
+    </button>
+  </nav>
+
+  <script>
+    const trends = [
+      ["femboy", 821], ["mommy", 308], ["bdsm", 247], ["deutsch", 244],
+      ["m4m", 207], ["martino", 207], ["bbw", 197], ["france", 194],
+      ["1", 189], ["daddy", 182], ["francais", 161], ["c", 152]
+    ];
+
+    const users = {
+      "95201314": { name: "kamala", id: "95201314", avatar: "../community/assets/avatar-kamala.jpg" },
+      "45201314": { name: "Jasnsk", id: "45201314", avatar: "../community/assets/avatar-jasnsk.jpg" },
+      "10086": { name: "Mika", id: "10086", avatar: "../community/assets/avatar-iris.jpg" },
+      "248013": { name: "Nova", id: "248013", avatar: "../community/assets/avatar-remote.jpg" }
+    };
+
+    const rooms = {
+      "5201314": { name: "AlexanderError", id: "5201314", locked: true },
+      "778899": { name: "Weekend Chat", id: "778899" },
+      "404404": { name: "Silent Room", id: "404404" }
+    };
+
+    const joinResponses = {
+      "5201314": "Joined the room",
+      "778899": "Room is full",
+      "404404": "Room no longer exists"
+    };
+
+    const posts = [
+      { title: "Just a little 5201314", author: "ypczg11", likes: 35, status: "Suspended", image: "alt-one" },
+      { title: "We’re just 5201314", author: "ypcna勿删1234", likes: 21, verified: true, image: "" },
+      { title: "5201314 call me", author: "ypczg44", likes: 7, verified: true, image: "alt-two" }
+    ];
+
+    const content = document.querySelector("#content");
+    const query = document.querySelector("#query");
+    const clear = document.querySelector("#clear");
+    const resetPrototype = document.querySelector("#resetPrototype");
+    let currentTab = "trending";
+
+    function renderTrending() {
+      content.innerHTML = trends.map((item, index) => {
+        const rank = index + 1;
+        const hot = rank <= 3;
+        return `
+          <div class="trend-row">
+            <div class="rank ${hot ? "hot" : ""}">${rank}</div>
+            <div class="term">${item[0]}</div>
+            <div class="score ${hot ? "hot" : ""}">${item[1]}${hot ? "<span>🔥</span>" : ""}</div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderForYou() {
+      const items = [["voice chat", 98], ["nearby", 82], ["anime", 77], ["music", 63], ["gaming", 61], ["language exchange", 48]];
+      content.innerHTML = items.map((item, index) => `
+        <div class="trend-row">
+          <div class="rank">${index + 1}</div>
+          <div class="term">${item[0]}</div>
+          <div class="score">${item[1]}</div>
+        </div>
+      `).join("");
+    }
+
+    function userCard(user) {
+      return `
+        <article class="card">
+          <div class="avatar" style="background-image: url('${user.avatar}')"></div>
+          <div>
+            <h3>${user.name}</h3>
+            <div class="meta">ID: ${highlight(user.id, query.value.trim())}</div>
+          </div>
+          <button class="card-action" type="button" aria-label="Open user"></button>
+        </article>
+      `;
+    }
+
+    function roomCard(room) {
+      return `
+        <article class="card">
+          <div class="room-icon"></div>
+          <div>
+            <h3>${room.name}${room.locked ? '<span class="room-badge" aria-hidden="true"></span>' : ""}</h3>
+            <div class="meta">ID: ${highlight(room.id, query.value.trim())}</div>
+          </div>
+          <button class="card-action" type="button" data-room-id="${room.id}" data-room-locked="${room.locked ? "true" : "false"}" aria-label="Open room"></button>
+        </article>
+      `;
+    }
+
+    function highlight(text, value) {
+      if (!value) return text;
+      return text.split(value).join(`<span class="match">${value}</span>`);
+    }
+
+    function postCard(post, value) {
+      return `
+        <article class="post-card">
+          <div class="post-image ${post.image}" aria-hidden="true"></div>
+          <h3 class="post-title">${highlight(post.title, value)}</h3>
+          <div class="post-meta-row">
+            <div class="mini-avatar"></div>
+            <div class="author">
+              ${post.author}
+              ${post.status ? `<span class="suspended">↗ ${post.status}</span>` : ""}
+              ${post.verified ? `<span class="verified">✓</span>` : ""}
+            </div>
+            <div class="likes"><span class="heart"></span>${post.likes}</div>
+          </div>
+        </article>
+      `;
+    }
+
+    function emptyResult(value) {
+      const type = /^\d+$/.test(value) ? "No user or room found" : "No results";
+      const note = /^\d+$/.test(value) ? "Check the full ID or room number, or keep searching by nickname." : "Try another keyword.";
+      content.innerHTML = `
+        <div class="empty">
+          <div class="empty-mark">?</div>
+          <h2>${type}</h2>
+          <p>${note}</p>
+        </div>
+      `;
+    }
+
+    function renderSearch(value) {
+      const normalized = value.trim();
+      if (!normalized) {
+        currentTab === "trending" ? renderTrending() : renderForYou();
+        return;
+      }
+
+      const foundUser = users[normalized];
+      const foundRoom = rooms[normalized];
+      const fuzzyUsers = Object.values(users).filter((user) => user.id.includes(normalized) && user.id !== normalized);
+      const fuzzyRooms = Object.values(rooms).filter((room) => room.id.includes(normalized) && room.id !== normalized);
+      const numeric = /^\d+$/.test(normalized);
+      const pieces = [];
+
+      if (numeric) {
+        pieces.push(`<p class="hint">Exact numbers match user IDs first, then room numbers. If both match, both results appear.</p>`);
+      }
+
+      if (foundUser) {
+        pieces.push(`
+          <div class="section-title">Users</div>
+          ${userCard(foundUser)}
+        `);
+      }
+
+      if (fuzzyUsers.length) {
+        pieces.push(`
+          <div class="section-title">Users</div>
+          ${fuzzyUsers.map(userCard).join("")}
+        `);
+      }
+
+      if (foundRoom) {
+        pieces.push(`
+          <div class="section-title">Rooms</div>
+          ${roomCard(foundRoom)}
+        `);
+      }
+
+      if (fuzzyRooms.length) {
+        pieces.push(`
+          <div class="section-title">Rooms</div>
+          ${fuzzyRooms.map(roomCard).join("")}
+        `);
+      }
+
+      if (numeric && normalized === "5201314") {
+        pieces.push(`
+          <div class="section-title">Posts</div>
+          <div class="post-grid">
+            ${posts.map(post => postCard(post, normalized)).join("")}
+          </div>
+        `);
+      }
+
+      if (!foundUser && !foundRoom && !fuzzyUsers.length && !fuzzyRooms.length) {
+        if (numeric) {
+          emptyResult(normalized);
+          return;
+        }
+        content.innerHTML = `
+          <p class="hint">Nicknames, tags, and posts continue to use the existing fuzzy search.</p>
+          <div class="section-title">Users</div>
+          ${userCard({ name: "Mia " + normalized, id: "481020", avatar: "../community/assets/avatar-iris.jpg" })}
+          <div class="section-title">Tags</div>
+          <div class="trend-row">
+            <div class="rank">#</div>
+            <div class="term">${normalized}</div>
+            <div class="score">Tag</div>
+          </div>
+        `;
+        return;
+      }
+
+      content.innerHTML = pieces.join("");
+    }
+
+    document.querySelectorAll(".tab").forEach(tab => {
+      tab.addEventListener("click", () => {
+        document.querySelectorAll(".tab").forEach(item => item.classList.remove("active"));
+        tab.classList.add("active");
+        currentTab = tab.dataset.tab;
+        renderSearch(query.value);
+      });
+    });
+
+    query.addEventListener("input", () => {
+      clear.style.display = query.value ? "block" : "none";
+      renderSearch(query.value);
+    });
+
+    clear.addEventListener("click", () => {
+      query.value = "";
+      clear.style.display = "none";
+      query.focus();
+      renderSearch("");
+    });
+
+    content.addEventListener("click", event => {
+      const target = event.target.closest("[data-room-id]");
+      if (!target) return;
+      if (target.dataset.roomLocked === "true") {
+        openPasswordDialog();
+        return;
+      }
+      showToast(mockJoinRoom(target.dataset.roomId));
+    });
+
+    function mockJoinRoom(roomId) {
+      return joinResponses[roomId] || "Unable to join this room";
+    }
+
+    function showToast(message) {
+      let toast = document.querySelector(".toast");
+      if (!toast) {
+        toast = document.createElement("div");
+        toast.className = "toast";
+        document.body.appendChild(toast);
+      }
+      toast.textContent = message;
+      toast.style.display = "flex";
+      window.clearTimeout(showToast.timer);
+      showToast.timer = window.setTimeout(() => {
+        toast.style.display = "none";
+      }, 1600);
+    }
+
+    clear.style.display = query.value ? "block" : "none";
+    renderSearch(query.value);
+
+    function openPasswordDialog() {
+      const layer = document.createElement("div");
+      layer.className = "password-layer is-open";
+      layer.innerHTML = `
+        <section class="password-dialog" role="dialog" aria-modal="true" aria-label="Room password">
+          <h2>输入房间密码</h2>
+          <p>该房间已设置密码，请输入 4 位数字密码。</p>
+          <input class="password-input" type="password" inputmode="numeric" maxlength="4" autocomplete="off" aria-label="4 位房间密码">
+          <div class="password-actions">
+            <button class="password-cancel" type="button">取消</button>
+            <button class="password-confirm" type="button">确认</button>
+          </div>
+        </section>
+      `;
+      document.body.appendChild(layer);
+      const input = layer.querySelector(".password-input");
+      input.focus();
+      layer.querySelector(".password-cancel").addEventListener("click", () => layer.remove());
+      layer.querySelector(".password-confirm").addEventListener("click", () => {
+        showToast(input.value.length === 4 ? "Password submitted" : "Please enter 4 digits");
+        if (input.value.length === 4) layer.remove();
+      });
+      layer.addEventListener("click", (event) => {
+        if (event.target === layer) layer.remove();
+      });
+    }
+
+    resetPrototype.addEventListener("click", () => {
+      window.location.reload();
+    });
+  </script>
+</body>
+</html>
