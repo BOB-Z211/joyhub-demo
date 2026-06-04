@@ -135,7 +135,7 @@
         width: 36px;
         height: 36px;
         border-radius: 50%;
-        background: #537843;
+        background: #d4d5dc center / cover no-repeat url("assets/avatar-remote.jpg");
       }
 
       .tabs {
@@ -608,13 +608,14 @@
         left: 0;
         right: 0;
         bottom: 0;
-        height: 533px;
-        padding: 26px 22px 28px;
-        border-radius: 20px 20px 0 0;
+        height: calc(100% - 100px);
+        max-height: 712px;
+        padding: 14px 22px 0;
+        border-radius: 18px 18px 0 0;
         background: #ffffff;
         transform: translateY(100%);
         transition: transform 220ms ease;
-        overflow-y: auto;
+        overflow: hidden;
         overscroll-behavior: contain;
         -webkit-overflow-scrolling: touch;
         touch-action: pan-y;
@@ -624,12 +625,31 @@
         transform: translateY(0);
       }
 
-      .remote-sheet::-webkit-scrollbar {
+      .remote-sheet-content {
+        height: 100%;
+        padding-bottom: 116px;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+      }
+
+      .remote-sheet-content::-webkit-scrollbar {
         display: none;
       }
 
-      .remote-sheet {
-        scrollbar-width: none;
+      .sheet-handle {
+        width: 40px;
+        height: 4px;
+        margin: 0 auto 14px;
+        border-radius: 999px;
+        background: #ddd8ef;
+      }
+
+      .toy-connect-area {
+        display: grid;
+        justify-items: center;
+        padding-bottom: 10px;
       }
 
       .sheet-title {
@@ -638,8 +658,9 @@
         justify-content: center;
         gap: 8px;
         margin: 0;
-        font-size: 17px;
-        font-weight: 700;
+        font-size: 18px;
+        font-weight: 600;
+        text-transform: capitalize;
       }
 
       .tag {
@@ -655,99 +676,178 @@
       }
 
       .sheet-subtitle {
-        margin: 6px 0 16px;
-        text-align: center;
-        color: #999999;
-        font-size: 10px;
+        display: inline-flex;
+        align-items: center;
+        gap: 2px;
+        min-height: 32px;
+        margin: 8px 0 10px;
+        padding: 4px 10px;
+        border-radius: 38px;
+        background: #f8f8f8;
+        color: #333333;
+        font-size: 14px;
+        font-weight: 400;
       }
 
       .toy-preview {
-        width: 80px;
-        height: 80px;
-        margin: 0 auto 16px;
-        border-radius: 8px;
-        background: #d4d1dc center / cover no-repeat url("assets/sheet-toy.jpg");
+        width: 150px;
+        height: 140px;
+        margin: 0 auto 10px;
+        border-radius: 0;
+        background: transparent center / contain no-repeat url("assets/sheet-toy.png");
       }
 
       .connect-btn {
-        display: block;
-        width: 132px;
-        height: 36px;
-        margin: 0 auto 18px;
-        border: 1px solid #d5cff9;
-        border-radius: 18px;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        width: 200px;
+        height: 58px;
+        margin: 0 auto 0;
+        padding: 8px 18px 6px;
+        border: 0;
+        outline: 6px solid #f5f1ff;
+        border-radius: 41px;
         background: #ffffff;
-        color: #333333;
+        color: #999999;
         font-size: 12px;
-        font-weight: 700;
+        font-weight: 400;
+        box-shadow: 0 4px 8px rgba(104, 104, 104, 0.2);
+      }
+
+      .connect-btn::before {
+        content: "";
+        display: block;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: center / contain no-repeat url("assets/connect.png");
+      }
+
+      .connect-btn.is-selected {
+        outline-color: #f5f1ff;
+        background: #ffffff;
+        color: #999999;
+      }
+
+      .connect-btn.is-selected::before {
+        background-image: url("assets/disconnect.png");
       }
 
       .settings-group {
-        margin-top: 12px
+        margin-top: 14px
       }
 
       .settings-label {
         margin: 0 0 8px;
-        font-size: 13px;
-        font-weight: 700;
+        font-size: 14px;
+        font-weight: 800;
+      }
+
+      .settings-hint {
+        margin: -4px 0 12px;
+        color: #999999;
+        font-size: 12px;
+        line-height: 1.35;
       }
 
       .option-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 8px
+        gap: 10px
       }
 
       .choice {
-        height: 36px;
+        height: 46px;
+        position: relative;
         display: flex;
         align-items: center;
-        justify-content: center;
-        gap: 7px;
-        border: 1px solid transparent;
-        border-radius: 9px;
+        justify-content: flex-start;
+        gap: 15px;
+        padding: 10px 24px;
+        border: 0;
+        border-radius: 15px;
         background: #f8f8f8;
-        color: #333333;
+        color: #000000;
         font-size: 12px;
-        font-weight: 700;
+        font-weight: 600;
       }
 
       .choice.is-selected {
-        border-color: #ff29a8;
-        background: #ffffff;
+        background:
+          linear-gradient(#ffffff, #ffffff) padding-box,
+          linear-gradient(90deg, #715afd 0%, #ff47a0 100%) border-box;
+        border: 2px solid transparent;
+        box-shadow: 0 0 6px rgba(252, 61, 152, 0.3);
+      }
+
+      .option-grid.is-disabled .choice {
+        border-color: transparent;
+        background: #f8f8f8;
+        color: #c7c7c7;
+        pointer-events: none;
+      }
+
+      .option-grid.is-disabled .radio-dot {
+        opacity: 0.35;
       }
 
       .radio-dot {
-        width: 22px;
-        height: 22px;
-        border-radius: 50%;
-        background: #dddce8;
+        width: 24px;
+        height: 24px;
+        flex: 0 0 24px;
+        display: block;
+        background: center / contain no-repeat;
+      }
+
+      .radio-dot.is-online {
+        background-image: url("assets/在线.png");
+      }
+
+      .radio-dot.is-hidden {
+        background-image: url("assets/隐身.png");
+      }
+
+      .radio-dot.is-everyone {
+        background-image: url("assets/所有人.png");
+      }
+
+      .radio-dot.is-friends {
+        background-image: url("assets/仅好友.png");
       }
 
       .role-card {
         position: relative;
-        min-height: 48px;
+        min-height: 70px;
         display: grid;
         place-items: center;
         align-content: center;
         gap: 5px;
-        border: 1px solid transparent;
-        border-radius: 9px;
-        background: #f8f8f8;
+        padding: 10px 15px 15px;
+        border: 0;
+        border-radius: 15px;
+        background: #f8f8fa;
         color: #666666;
-        font-size: 11px;
-        font-weight: 700;
+        font-size: 12px;
+        font-weight: 600;
       }
 
       .role-card.is-selected {
-        border-color: #715afd;
-        background: #ffffff;
+        background:
+          linear-gradient(#ffffff, #ffffff) padding-box,
+          linear-gradient(90deg, #715afd 0%, #ff47a0 100%) border-box;
+        border: 2px solid transparent;
         color: #715afd;
+        box-shadow: 0 0 6px rgba(252, 61, 152, 0.3);
+        font-weight: 800;
       }
 
       .role-card img {
-        width: 16px;
-        height: 16px;
+        width: 24px;
+        height: 24px;
       }
 
       .role-card.is-selected::after {
@@ -766,26 +866,246 @@
       }
 
       .confirm-btn {
-        width: 100%;
-        height: 42px;
-        margin-top: 12px;
-        position: sticky;
-        bottom: 0;
+        position: absolute;
+        left: 22px;
+        right: 22px;
+        bottom: 12px;
+        width: auto;
+        height: 48px;
+        margin-top: 0;
         z-index: 2;
-        box-shadow: 0 -12px 20px #ffffff;
         border: 0;
-        border-radius: 23px;
+        border-radius: 24px;
         background: #6954d9;
         color: #ffffff;
-        font-size: 14px;
-        font-weight: 700;
+        font-size: 16px;
+        font-weight: 800;
         flex: 0 0 auto;
+      }
+
+      .onboarding-layer {
+        position: absolute;
+        inset: 0;
+        z-index: 80;
+        display: none;
+        background: rgba(0, 0, 0, 0.38);
+      }
+
+      .onboarding-layer.is-open {
+        display: block;
+      }
+
+      .onboarding-panel {
+        position: absolute;
+        left: 18px;
+        right: 18px;
+        bottom: 24px;
+        min-height: 500px;
+        padding: 22px 20px 20px;
+        border-radius: 24px;
+        background: #ffffff;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.22);
+      }
+
+      .onboarding-close {
+        position: absolute;
+        right: 16px;
+        top: 14px;
+        width: 32px;
+        height: 32px;
+        border: 0;
+        border-radius: 50%;
+        background: #f7f7f7;
+        color: #777777;
+        font-size: 20px;
+        line-height: 1;
+      }
+
+      .onboarding-step {
+        display: none;
+      }
+
+      .onboarding-step.is-active {
+        display: block;
+      }
+
+      .onboarding-kicker {
+        margin: 0 0 8px;
+        color: #715afd;
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      .onboarding-title {
+        margin: 0;
+        padding-right: 34px;
+        color: #222222;
+        font-size: 24px;
+        line-height: 1.18;
+        font-weight: 900;
+      }
+
+      .onboarding-copy {
+        margin: 13px 0 18px;
+        color: #666666;
+        font-size: 13px;
+        line-height: 1.55;
+        font-weight: 600;
+      }
+
+      .onboarding-card {
+        display: grid;
+        gap: 12px;
+        margin: 18px 0 22px;
+      }
+
+      .onboarding-card-item {
+        display: grid;
+        grid-template-columns: 44px 1fr;
+        gap: 12px;
+        align-items: center;
+        padding: 13px;
+        border-radius: 14px;
+        background: #f8f7ff;
+      }
+
+      .onboarding-icon {
+        width: 44px;
+        height: 44px;
+        display: grid;
+        place-items: center;
+        border-radius: 50%;
+        background: #715afd;
+        color: #ffffff;
+        font-size: 18px;
+        font-weight: 900;
+      }
+
+      .onboarding-card-item h3 {
+        margin: 0 0 3px;
+        font-size: 14px;
+        font-weight: 900;
+      }
+
+      .onboarding-card-item p {
+        margin: 0;
+        color: #777777;
+        font-size: 11px;
+        line-height: 1.35;
+        font-weight: 600;
+      }
+
+      .onboarding-actions {
+        position: absolute;
+        left: 20px;
+        right: 20px;
+        bottom: 18px;
+        display: grid;
+        gap: 10px;
+      }
+
+      .onboarding-primary,
+      .onboarding-secondary {
+        height: 44px;
+        border-radius: 22px;
+        font-size: 14px;
+        font-weight: 900;
+      }
+
+      .onboarding-primary {
+        border: 0;
+        background: #715afd;
+        color: #ffffff;
+        box-shadow: 0 8px 18px rgba(113, 90, 253, 0.28);
+      }
+
+      .onboarding-secondary {
+        border: 0;
+        background: #f5f5f5;
+        color: #666666;
+      }
+
+      .onboarding-roles {
+        margin-top: 18px;
+      }
+
+      .onboarding-privacy {
+        display: grid;
+        gap: 10px;
+        margin-top: 18px;
+      }
+
+      .privacy-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 14px;
+        border-radius: 14px;
+        background: #f8f8f8;
+      }
+
+      .privacy-row strong {
+        display: block;
+        margin-bottom: 3px;
+        font-size: 13px;
+        font-weight: 900;
+      }
+
+      .privacy-row span {
+        display: block;
+        color: #777777;
+        font-size: 11px;
+        line-height: 1.35;
+        font-weight: 600;
+      }
+
+      .privacy-toggle {
+        width: 86px;
+        height: 34px;
+        flex: 0 0 auto;
+        border: 1px solid #ffcf77;
+        border-radius: 17px;
+        background: #fff5d9;
+        color: #8a5a00;
+        font-size: 11px;
+        font-weight: 900;
+      }
+
+      .privacy-toggle.is-visible {
+        border-color: #715afd;
+        background: #715afd;
+        color: #ffffff;
+      }
+
+      .toast {
+        position: absolute;
+        left: 50%;
+        bottom: 112px;
+        z-index: 90;
+        max-width: 310px;
+        padding: 11px 14px;
+        border-radius: 18px;
+        background: rgba(34, 34, 34, 0.92);
+        color: #ffffff;
+        font-size: 12px;
+        font-weight: 800;
+        line-height: 1.35;
+        text-align: center;
+        opacity: 0;
+        pointer-events: none;
+        transform: translate(-50%, 10px);
+        transition: opacity 180ms ease, transform 180ms ease;
+      }
+
+      .toast.is-visible {
+        opacity: 1;
+        transform: translate(-50%, 0);
       }
 
 
 
 
-      .app-view.profile-viewer,
       .app-view.post-viewer {
         z-index: 35;
         overflow-y: auto;
@@ -795,8 +1115,27 @@
         scrollbar-width: none;
       }
 
-      .app-view.profile-viewer::-webkit-scrollbar,
       .app-view.post-viewer::-webkit-scrollbar {
+        display: none;
+      }
+
+      .app-view.profile-viewer {
+        z-index: 35;
+        overflow: hidden;
+        background: #ffffff;
+      }
+
+      .profile-scroll {
+        position: absolute;
+        inset: 0;
+        overflow-y: auto;
+        overscroll-behavior-y: contain;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 112px;
+        scrollbar-width: none;
+      }
+
+      .profile-scroll::-webkit-scrollbar {
         display: none;
       }
 
@@ -819,9 +1158,40 @@
         opacity: 0;
       }
 
+      .profile-remote-btn {
+        position: absolute;
+        left: 20px;
+        right: 20px;
+        bottom: 32px;
+        z-index: 4;
+        height: 58px;
+        display: grid;
+        grid-template-columns: 44px auto;
+        align-items: center;
+        justify-content: center;
+        gap: 14px;
+        border: 0;
+        border-radius: 29px;
+        background: #715afd;
+        color: #ffffff;
+        font-size: 18px;
+        font-weight: 900;
+        box-shadow: 0 12px 28px rgba(113, 90, 253, 0.34);
+      }
+
+      .profile-remote-btn img {
+        width: 30px;
+        height: 30px;
+      }
+
       .remote-plaza {
-        background: #fbf8ff;
+        background: #ffffff;
         z-index: 34;
+      }
+
+      .remote-plaza .status {
+        background-color: #ffffff;
+        background-image: url("assets/status-bar-light.png");
       }
 
       .plaza-header {
@@ -860,6 +1230,32 @@
         font-weight: 700;
         line-height: 1.35;
         flex: 0 0 auto;
+      }
+
+      .plaza-tabs {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin: 0 0 14px;
+        padding: 3px;
+        border-radius: 18px;
+        background: #f7f7f7;
+      }
+
+      .plaza-tab {
+        height: 34px;
+        border: 0;
+        border-radius: 15px;
+        background: transparent;
+        color: #999999;
+        font-size: 13px;
+        font-weight: 800;
+      }
+
+      .plaza-tab.is-selected {
+        background: #ffffff;
+        color: #333333;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
       }
 
       .plaza-visibility {
@@ -923,6 +1319,10 @@
         text-align: left;
         box-shadow: 0 10px 22px rgba(113, 90, 253, 0.06);
         touch-action: pan-y;
+      }
+
+      .remote-card.is-filtered {
+        display: none;
       }
 
       .remote-card-info {
@@ -1227,17 +1627,17 @@
             <div class="remote-badge"></div>
             <div class="story-name">Your Remote</div>
           </button>
-          <button class="story active" type="button" data-call-trigger data-name="Kamala HQ" data-avatar="assets/avatar-kamala.jpg">
+          <button class="story active" type="button" data-profile-trigger data-name="Kamala HQ" data-avatar="assets/avatar-kamala.jpg">
             <div class="avatar kamala-photo"></div>
             <div class="remote-badge"></div>
             <div class="story-name">Kamala HQ</div>
           </button>
-          <button class="story active" type="button" data-call-trigger data-name="IrisOOIw" data-avatar="assets/avatar-iris.jpg">
+          <button class="story active" type="button" data-profile-trigger data-name="IrisOOIw" data-avatar="assets/avatar-iris.jpg">
             <div class="avatar iris-photo"></div>
             <div class="remote-badge"></div>
             <div class="story-name">IrisOOIw</div>
           </button>
-          <button class="story active" type="button" data-call-trigger data-name="Jasnsk" data-avatar="assets/avatar-jasnsk.jpg">
+          <button class="story active" type="button" data-profile-trigger data-name="Jasnsk" data-avatar="assets/avatar-jasnsk.jpg">
             <div class="avatar jasnsk-photo"></div>
             <div class="remote-badge"></div>
             <div class="story-name">Jasnsk</div>
@@ -1344,42 +1744,116 @@
       <div class="sheet-layer" id="remoteSheet" aria-hidden="true">
         <button class="scrim" type="button" data-sheet-close aria-label="Close settings"></button>
         <section class="remote-sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
-          <h2 class="sheet-title" id="sheetTitle">玩具名字 <span class="tag">标签</span></h2>
-          <p class="sheet-subtitle">⇄ Switch toys</p>
-          <div class="toy-preview" aria-hidden="true"></div>
-          <button class="connect-btn" type="button">Click to connect</button>
-
-          <div class="settings-group">
-            <p class="settings-label">我在广场的状态</p>
-            <div class="option-grid" data-plaza-status-options>
-              <button class="choice is-selected" type="button" data-plaza-status="visible"><span class="radio-dot"></span>广场可见中</button>
-              <button class="choice" type="button" data-plaza-status="hidden"><span class="radio-dot"></span>隐身浏览中</button>
+          <div class="remote-sheet-content">
+            <div class="sheet-handle" aria-hidden="true"></div>
+            <div class="toy-connect-area">
+              <h2 class="sheet-title" id="sheetTitle">RoseFlexa Pro</h2>
+              <p class="sheet-subtitle">⇄ Switch toys</p>
+              <div class="toy-preview" aria-hidden="true"></div>
+              <button class="connect-btn is-selected" type="button">Click to disconnect</button>
             </div>
-          </div>
+
+		          <div class="settings-group">
+		            <p class="settings-label">我在广场的状态</p>
+	            <div class="option-grid" data-plaza-status-options>
+		              <button class="choice is-selected" type="button" data-plaza-status="visible"><span class="radio-dot is-online"></span>广场可见中</button>
+		              <button class="choice" type="button" data-plaza-status="hidden"><span class="radio-dot is-hidden"></span>隐身浏览中</button>
+	            </div>
+	          </div>
 
           <div class="settings-group">
             <p class="settings-label">谁可以看到我</p>
-            <div class="option-grid">
-              <button class="choice is-selected" type="button"><span class="radio-dot"></span>所有人</button>
-              <button class="choice" type="button"><span class="radio-dot"></span>仅好友</button>
+            <div class="option-grid" data-visibility-options>
+	              <button class="choice is-selected" type="button"><span class="radio-dot is-everyone"></span>所有人</button>
+	              <button class="choice" type="button"><span class="radio-dot is-friends"></span>仅好友</button>
             </div>
           </div>
 
-          <div class="settings-group">
-            <p class="settings-label">我的角色喜好</p>
-            <div class="option-grid">
+	          <div class="settings-group">
+	            <p class="settings-label">我的角色喜好</p>
+	            <p class="settings-hint">We'll prioritize showing you Straight Woman.</p>
+	            <div class="option-grid">
               <button class="role-card is-selected" type="button"><img src="assets/SM.svg" alt="" />Straight Man</button>
               <button class="role-card" type="button"><img src="assets/SW.svg" alt="" />Straight Woman</button>
               <button class="role-card" type="button"><img src="assets/GT.svg" alt="" />Gay Top</button>
               <button class="role-card" type="button"><img src="assets/GB.svg" alt="" />Gay Bottom</button>
               <button class="role-card" type="button"><img src="assets/LB.svg" alt="" />Lesbian Butch</button>
               <button class="role-card" type="button"><img src="assets/LF.svg" alt="" />Lesbian Femme</button>
-            </div>
+	            </div>
+	          </div>
           </div>
 
-          <button class="confirm-btn" type="button" data-sheet-close>确定</button>
-        </section>
-      </div>
+		          <button class="confirm-btn" type="button" data-sheet-close>确定</button>
+	        </section>
+	      </div>
+
+	      <div class="onboarding-layer is-open" id="coPlayOnboarding" aria-hidden="false">
+	        <section class="onboarding-panel" role="dialog" aria-modal="true" aria-label="Co-play guide">
+	          <button class="onboarding-close" type="button" data-onboarding-close aria-label="Close">×</button>
+
+	          <div class="onboarding-step is-active" data-onboarding-step="0">
+	            <p class="onboarding-kicker">NEW CO-PLAY</p>
+	            <h2 class="onboarding-title">在这里快速与其他用户 Remote</h2>
+	            <p class="onboarding-copy">Remote 广场会展示愿意被联系的用户。你可以浏览、筛选好友，也可以在满足条件时直接发起 Remote。</p>
+	            <div class="onboarding-card">
+	              <div class="onboarding-card-item">
+	                <span class="onboarding-icon">1</span>
+	                <div><h3>发现在线玩伴</h3><p>广场只展示当前处于广场可见中的用户。</p></div>
+	              </div>
+	              <div class="onboarding-card-item">
+	                <span class="onboarding-icon">2</span>
+	                <div><h3>选择角色偏好</h3><p>先告诉大家你更喜欢扮演什么角色。</p></div>
+	              </div>
+	              <div class="onboarding-card-item">
+	                <span class="onboarding-icon">3</span>
+	                <div><h3>自己决定是否可见</h3><p>默认隐身浏览，切到广场可见中后别人才可以联系你。</p></div>
+	              </div>
+	            </div>
+	            <div class="onboarding-actions">
+	              <button class="onboarding-primary" type="button" data-onboarding-next>开始设置</button>
+	            </div>
+	          </div>
+
+	          <div class="onboarding-step" data-onboarding-step="1">
+	            <p class="onboarding-kicker">ROLE</p>
+	            <h2 class="onboarding-title">选择你喜欢扮演的角色</h2>
+	            <p class="onboarding-copy">这个偏好会用于 Remote 广场的展示和匹配感知，后面也可以在设置里修改。</p>
+	            <div class="option-grid onboarding-roles">
+	              <button class="role-card is-selected" type="button"><img src="assets/SM.svg" alt="" />Straight Man</button>
+	              <button class="role-card" type="button"><img src="assets/SW.svg" alt="" />Straight Woman</button>
+	              <button class="role-card" type="button"><img src="assets/GT.svg" alt="" />Gay Top</button>
+	              <button class="role-card" type="button"><img src="assets/GB.svg" alt="" />Gay Bottom</button>
+	              <button class="role-card" type="button"><img src="assets/LB.svg" alt="" />Lesbian Butch</button>
+	              <button class="role-card" type="button"><img src="assets/LF.svg" alt="" />Lesbian Femme</button>
+	            </div>
+	            <div class="onboarding-actions">
+	              <button class="onboarding-primary" type="button" data-onboarding-next>下一步</button>
+	              <button class="onboarding-secondary" type="button" data-onboarding-prev>返回</button>
+	            </div>
+	          </div>
+
+	          <div class="onboarding-step" data-onboarding-step="2">
+	            <p class="onboarding-kicker">PRIVACY</p>
+	            <h2 class="onboarding-title">默认隐身浏览，由你决定是否可见</h2>
+	            <p class="onboarding-copy">隐身时你可以看广场，但别人看不到你。切到广场可见中，就相当于上线，其他用户才可以联系你。</p>
+	            <div class="onboarding-privacy">
+	              <div class="privacy-row">
+	                <div><strong>我在广场的状态</strong><span>默认隐身浏览，手动切换后才对别人可见。</span></div>
+	                <button class="privacy-toggle" type="button" data-onboarding-visibility>隐身浏览中</button>
+	              </div>
+	              <div class="privacy-row">
+	                <div><strong>谁可以看到我</strong><span>隐身时不可设置；可见后可选择所有人或仅好友。</span></div>
+	              </div>
+	            </div>
+	            <div class="onboarding-actions">
+	              <button class="onboarding-primary" type="button" data-onboarding-finish>进入 Co-play</button>
+	              <button class="onboarding-secondary" type="button" data-onboarding-prev>返回</button>
+	            </div>
+	          </div>
+	        </section>
+	      </div>
+
+	      <div class="toast" id="prototypeToast" role="status" aria-live="polite"></div>
 
 
 
@@ -1395,8 +1869,11 @@
       </section>
 
       <section class="app-view profile-viewer" id="profileViewer" aria-hidden="true">
-        <img class="profile-image" src="assets/profile_viewer.jpg" alt="Profile viewer" />
+        <div class="profile-scroll">
+          <img class="profile-image" src="assets/profile_viewer.jpg" alt="Profile viewer" />
+        </div>
         <button class="profile-back" type="button" aria-label="Back"></button>
+        <button class="profile-remote-btn" type="button" data-profile-remote data-target-visible="true" data-name="Orange777" data-avatar="assets/avatar-iris.jpg"><img src="assets/ic_remote.svg" alt="" />Remote</button>
       </section>
 
       <section class="app-view remote-plaza" id="remotePlaza" aria-hidden="true">
@@ -1407,43 +1884,47 @@
         </header>
         <div class="plaza-scroll">
           <div class="plaza-tip">
-            <span>如果不希望广场上非好友的用户联系你，可以在这里设置</span>
-            <button class="plaza-visibility" type="button" data-sheet-trigger><span class="green-dot"></span><span class="plaza-status-text">广场可见中</span> ›</button>
+            <span>在这里进行免打扰设置</span>
+	            <button class="plaza-visibility is-hidden" type="button" data-sheet-trigger><span class="green-dot"></span><span class="plaza-status-text">隐身浏览中</span> ›</button>
           </div>
+          <nav class="plaza-tabs" aria-label="Remote plaza filter">
+            <button class="plaza-tab is-selected" type="button" data-plaza-filter="all">所有用户</button>
+            <button class="plaza-tab" type="button" data-plaza-filter="friends">我的好友</button>
+          </nav>
           <section class="remote-list" aria-label="Remote people">
-            <button class="remote-card" type="button" data-profile-trigger data-name="Vivian" data-avatar="assets/avatar-iris.jpg">
+	            <button class="remote-card" type="button" data-profile-trigger data-plaza-scope="friend" data-target-visible="true" data-name="Vivian" data-avatar="assets/avatar-iris.jpg">
               <span class="remote-card-avatar" style="background-image: url('assets/avatar-iris.jpg')"></span>
               <span class="remote-card-info"><h3>Vivian <img src="assets/ic_badge_level.png" alt="" /></h3><p>I am Vivian. The woman who writes a diary...</p><span class="remote-toys"><img src="assets/toy-a.png" alt="" /><img src="assets/toy-b.png" alt="" /></span></span>
               <span class="remote-action" data-call-trigger><img src="assets/ic_remote.svg" alt="" /></span>
             </button>
-            <button class="remote-card" type="button" data-profile-trigger data-name="Suger" data-avatar="assets/avatar-remote.jpg">
+	            <button class="remote-card" type="button" data-profile-trigger data-plaza-scope="all" data-target-visible="true" data-name="Suger" data-avatar="assets/avatar-remote.jpg">
               <span class="remote-card-avatar" style="background-image: url('assets/avatar-remote.jpg')"></span>
               <span class="remote-card-info"><h3>Suger <img src="assets/ic_badge_level.png" alt="" /></h3><p>OMGOMGOMGOMG</p><span class="remote-toys"><img src="assets/toy-c.png" alt="" /></span></span>
               <span class="remote-action" data-call-trigger><img src="assets/ic_remote.svg" alt="" /></span>
             </button>
-            <button class="remote-card" type="button" data-profile-trigger data-name="Suger" data-avatar="assets/avatar-jasnsk.jpg">
+	            <button class="remote-card" type="button" data-profile-trigger data-plaza-scope="friend" data-target-visible="true" data-name="Suger" data-avatar="assets/avatar-jasnsk.jpg">
               <span class="remote-card-avatar" style="background-image: url('assets/avatar-jasnsk.jpg')"></span>
               <span class="remote-card-info"><h3>Suger <img src="assets/ic_badge_level.png" alt="" /></h3><p>OMGOMGOMGOMG</p><span class="remote-toys"><img src="assets/toy-c.png" alt="" /></span></span>
               <span class="remote-action" data-call-trigger><img src="assets/ic_remote.svg" alt="" /></span>
             </button>
-            <button class="remote-card male" type="button" data-profile-trigger data-name="Mr.Ben" data-avatar="assets/avatar-kamala.jpg">
+	            <button class="remote-card male" type="button" data-profile-trigger data-plaza-scope="all" data-target-visible="true" data-name="Mr.Ben" data-avatar="assets/avatar-kamala.jpg">
               <span class="remote-card-avatar" style="background-image: url('assets/avatar-kamala.jpg')"></span>
               <span class="remote-card-info"><h3>Mr.Ben <img src="assets/ic_badge_level.png" alt="" /></h3><p>hihihi</p><span class="remote-toys"><img src="assets/toy-a.png" alt="" /><img src="assets/toy-b.png" alt="" /></span></span>
               <span class="remote-action" data-call-trigger><img src="assets/ic_remote.svg" alt="" /></span>
             </button>
-            <button class="remote-card male" type="button" data-profile-trigger data-name="ZoeIny" data-avatar="assets/avatar-iris.jpg">
+	            <button class="remote-card male" type="button" data-profile-trigger data-plaza-scope="friend" data-target-visible="true" data-name="ZoeIny" data-avatar="assets/avatar-iris.jpg">
               <span class="remote-card-avatar" style="background-image: url('assets/avatar-iris.jpg')"></span>
               <span class="remote-card-info"><h3>ZoeIny <img src="assets/ic_badge_level.png" alt="" /></h3><p>Where's my baby</p><span class="remote-toys"><img src="assets/toy-a.png" alt="" /><img src="assets/toy-b.png" alt="" /></span></span>
               <span class="remote-action" data-call-trigger><img src="assets/ic_remote.svg" alt="" /></span>
             </button>
-            <button class="remote-card male" type="button" data-profile-trigger data-name="Mr.Ben" data-avatar="assets/avatar-jasnsk.jpg">
+	            <button class="remote-card male" type="button" data-profile-trigger data-plaza-scope="all" data-target-visible="true" data-name="Mr.Ben" data-avatar="assets/avatar-jasnsk.jpg">
               <span class="remote-card-avatar" style="background-image: url('assets/avatar-jasnsk.jpg')"></span>
               <span class="remote-card-info"><h3>Mr.Ben <img src="assets/ic_badge_level.png" alt="" /></h3><p>hihihi</p><span class="remote-toys"><img src="assets/toy-a.png" alt="" /><img src="assets/toy-b.png" alt="" /></span></span>
               <span class="remote-action" data-call-trigger><img src="assets/ic_remote.svg" alt="" /></span>
             </button>
           </section>
         </div>
-        <button class="quick-start" type="button" data-call-trigger data-name="Vivian" data-avatar="assets/avatar-iris.jpg">快速开始</button>
+	        <button class="quick-start" type="button" data-call-trigger data-target-visible="true" data-name="Vivian" data-avatar="assets/avatar-iris.jpg">快速开始</button>
         <div class="home-indicator"></div>
       </section>
 
@@ -1509,8 +1990,10 @@
       const storiesLane = document.querySelector('.stories');
       const feed = document.querySelector('.feed');
       const sheet = document.querySelector('#remoteSheet');
+      const sheetPanel = document.querySelector('.remote-sheet-content');
       const postViewer = document.querySelector('#postViewer');
       const profileViewer = document.querySelector('#profileViewer');
+      const profileScroll = document.querySelector('.profile-scroll');
       const plazaView = document.querySelector('#remotePlaza');
       const callView = document.querySelector('#callView');
       const chatView = document.querySelector('#chatView');
@@ -1520,8 +2003,18 @@
       const callName = document.querySelector('.call-name');
       const plazaVisibility = document.querySelector('.plaza-visibility');
       const plazaStatusText = document.querySelector('.plaza-status-text');
+      const visibilityOptions = document.querySelector('[data-visibility-options]');
+      const onboarding = document.querySelector('#coPlayOnboarding');
+      const onboardingSteps = document.querySelectorAll('[data-onboarding-step]');
+      const onboardingVisibility = document.querySelector('[data-onboarding-visibility]');
+      const connectBtn = document.querySelector('.connect-btn');
+      const toast = document.querySelector('#prototypeToast');
       const resetPrototype = document.querySelector('#resetPrototype');
       let callTimer;
+      let toastTimer;
+      let onboardingStep = 0;
+      let isPlazaVisible = false;
+      let toyConnected = true;
 
       const setView = (view) => {
         [postViewer, profileViewer, plazaView, callView, chatView].forEach((screen) => {
@@ -1538,17 +2031,59 @@
         sheet.classList.remove('is-open');
         sheet.setAttribute('aria-hidden', 'true');
       };
+      const showToast = (message) => {
+        clearTimeout(toastTimer);
+        toast.textContent = message;
+        toast.classList.add('is-visible');
+        toastTimer = setTimeout(() => {
+          toast.classList.remove('is-visible');
+        }, 2200);
+      };
       const startCall = (person) => {
         closeSheet();
+        closeOnboarding();
         callName.textContent = person.name;
         callAvatar.style.backgroundImage = `url("${person.avatar}")`;
         setView(callView);
         clearTimeout(callTimer);
         callTimer = setTimeout(() => setView(chatView), 5000);
       };
+      const attemptRemote = (person) => {
+        if (!isPlazaVisible) {
+          showToast('切换为广场可见中后，才可以从 Remote 广场发起连接');
+          openSheet();
+          return;
+        }
+        if (!toyConnected) {
+          showToast('请先连接玩具，再发起 Remote');
+          openSheet();
+          return;
+        }
+        if (person.targetVisible === false) {
+          showToast('对方当前不可见，暂时不能发起 Remote');
+          return;
+        }
+        startCall(person);
+      };
       const returnHome = () => {
         clearTimeout(callTimer);
         setView(null);
+      };
+
+      const setOnboardingStep = (step) => {
+        onboardingStep = Math.max(0, Math.min(step, onboardingSteps.length - 1));
+        onboardingSteps.forEach((item, index) => {
+          item.classList.toggle('is-active', index === onboardingStep);
+        });
+      };
+      const openOnboarding = () => {
+        onboarding.classList.add('is-open');
+        onboarding.setAttribute('aria-hidden', 'false');
+        setOnboardingStep(0);
+      };
+      const closeOnboarding = () => {
+        onboarding.classList.remove('is-open');
+        onboarding.setAttribute('aria-hidden', 'true');
       };
 
 
@@ -1561,7 +2096,7 @@
       let laneTapTarget = null;
 
       const activateLaneTarget = (target) => {
-        const trigger = target.closest('[data-sheet-trigger], [data-plaza-trigger], [data-call-trigger]');
+        const trigger = target.closest('[data-sheet-trigger], [data-plaza-trigger], [data-profile-trigger], [data-call-trigger]');
         if (!trigger) return;
         if (trigger.hasAttribute('data-sheet-trigger')) {
           openSheet();
@@ -1571,13 +2106,19 @@
           setView(plazaView);
           return;
         }
-        if (trigger.hasAttribute('data-call-trigger')) {
-          startCall({
-            name: trigger.dataset.name,
-            avatar: trigger.dataset.avatar,
-          });
+        if (trigger.hasAttribute('data-profile-trigger')) {
+          profileScroll.scrollTop = 0;
+          setView(profileViewer);
+          return;
         }
-      };
+		        if (trigger.hasAttribute('data-call-trigger')) {
+		          attemptRemote({
+		            name: trigger.dataset.name,
+	            avatar: trigger.dataset.avatar,
+	            targetVisible: trigger.dataset.targetVisible !== 'false',
+	          });
+	        }
+	      };
 
       storiesLane.addEventListener('pointerdown', (event) => {
         laneDragging = true;
@@ -1649,13 +2190,14 @@
         if (trigger.closest('.stories')) return;
         trigger.addEventListener('click', (event) => {
           event.stopPropagation();
-          const card = trigger.closest('[data-name][data-avatar]');
-          startCall({
-            name: trigger.dataset.name || card?.dataset.name,
-            avatar: trigger.dataset.avatar || card?.dataset.avatar,
-          });
-        });
-      });
+	          const card = trigger.closest('[data-name][data-avatar]');
+	          attemptRemote({
+	            name: trigger.dataset.name || card?.dataset.name,
+	            avatar: trigger.dataset.avatar || card?.dataset.avatar,
+	            targetVisible: (trigger.dataset.targetVisible || card?.dataset.targetVisible) !== 'false',
+	          });
+	        });
+	      });
 
 
 
@@ -1703,7 +2245,7 @@
           return;
         }
         if (profileTarget) {
-          profileViewer.scrollTop = 0;
+          profileScroll.scrollTop = 0;
           setView(profileViewer);
         }
       });
@@ -1736,8 +2278,17 @@
 
       document.querySelectorAll('[data-profile-trigger]').forEach((trigger) => {
         trigger.addEventListener('click', () => {
-          profileViewer.scrollTop = 0;
+          profileScroll.scrollTop = 0;
           setView(profileViewer);
+        });
+      });
+
+      document.querySelector('[data-profile-remote]').addEventListener('click', (event) => {
+        const trigger = event.currentTarget;
+        attemptRemote({
+          name: trigger.dataset.name,
+          avatar: trigger.dataset.avatar,
+          targetVisible: trigger.dataset.targetVisible !== 'false',
         });
       });
 
@@ -1767,21 +2318,76 @@
       document.querySelector('.plaza-back').addEventListener('click', returnHome);
 
 
-      document.querySelectorAll('[data-plaza-status]').forEach((button) => {
+	      const setPlazaStatus = (hidden) => {
+	        isPlazaVisible = !hidden;
+	        plazaVisibility.classList.toggle('is-hidden', hidden);
+	        plazaStatusText.textContent = hidden ? '隐身浏览中' : '广场可见中';
+	        visibilityOptions.classList.toggle('is-disabled', hidden);
+	        document.querySelectorAll('[data-plaza-status]').forEach((button) => {
+	          button.classList.toggle('is-selected', button.dataset.plazaStatus === (hidden ? 'hidden' : 'visible'));
+	        });
+	        if (hidden) {
+	          visibilityOptions.querySelectorAll('.is-selected').forEach((item) => item.classList.remove('is-selected'));
+	        } else if (!visibilityOptions.querySelector('.is-selected')) {
+	          visibilityOptions.querySelector('.choice')?.classList.add('is-selected');
+	        }
+	        if (onboardingVisibility) {
+	          onboardingVisibility.classList.toggle('is-visible', !hidden);
+	          onboardingVisibility.textContent = hidden ? '隐身浏览中' : '广场可见中';
+	        }
+	        requestAnimationFrame(() => {
+	          sheetPanel.scrollTop = 0;
+	        });
+	      };
+
+	      document.querySelectorAll('[data-plaza-status]').forEach((button) => {
+	        button.addEventListener('click', () => setPlazaStatus(button.dataset.plazaStatus === 'hidden'));
+      });
+
+      document.querySelectorAll('[data-plaza-filter]').forEach((button) => {
         button.addEventListener('click', () => {
-          const hidden = button.dataset.plazaStatus === 'hidden';
-          plazaVisibility.classList.toggle('is-hidden', hidden);
-          plazaStatusText.textContent = hidden ? '隐身浏览中' : '广场可见中';
+          const showFriends = button.dataset.plazaFilter === 'friends';
+          document.querySelectorAll('[data-plaza-filter]').forEach((tab) => {
+            tab.classList.toggle('is-selected', tab === button);
+          });
+          document.querySelectorAll('.remote-card').forEach((card) => {
+            card.classList.toggle('is-filtered', showFriends && card.dataset.plazaScope !== 'friend');
+          });
         });
       });
 
-      document.querySelectorAll('.choice, .role-card').forEach((button) => {
-        button.addEventListener('click', () => {
-          const group = button.closest('.option-grid');
-          group.querySelectorAll('.is-selected').forEach((item) => item.classList.remove('is-selected'));
-          button.classList.add('is-selected');
-        });
-      });
+	      document.querySelectorAll('.choice, .role-card').forEach((button) => {
+		        button.addEventListener('click', () => {
+		          const group = button.closest('.option-grid');
+		          if (group.classList.contains('is-disabled')) return;
+		          group.querySelectorAll('.is-selected').forEach((item) => item.classList.remove('is-selected'));
+		          button.classList.add('is-selected');
+		          requestAnimationFrame(() => {
+		            sheetPanel.scrollTop = 0;
+		          });
+		        });
+	      });
+
+		      connectBtn.addEventListener('click', () => {
+		        toyConnected = !toyConnected;
+			        connectBtn.textContent = toyConnected ? 'Click to disconnect' : 'Click to Connect';
+		        connectBtn.classList.toggle('is-selected', toyConnected);
+		        closeSheet();
+		        showToast(toyConnected ? '玩具已连接，现在可以发起 Remote' : '玩具已断开连接');
+		      });
+
+	      document.querySelectorAll('[data-onboarding-next]').forEach((button) => {
+	        button.addEventListener('click', () => setOnboardingStep(onboardingStep + 1));
+	      });
+
+	      document.querySelectorAll('[data-onboarding-prev]').forEach((button) => {
+	        button.addEventListener('click', () => setOnboardingStep(onboardingStep - 1));
+	      });
+
+	      document.querySelector('[data-onboarding-close]').addEventListener('click', closeOnboarding);
+	      document.querySelector('[data-onboarding-finish]').addEventListener('click', closeOnboarding);
+	      onboardingVisibility.addEventListener('click', () => setPlazaStatus(isPlazaVisible));
+	      setPlazaStatus(true);
 
       resetPrototype.addEventListener('click', () => {
         window.location.reload();
